@@ -22,8 +22,9 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Cleans build artifacts from all maven projects in a folder
 #
+#
+# Cleans build artifacts from all maven projects in a folder
 
 if [ "${#}" == "0" ]; then
     ROOT="`pwd`"
@@ -35,8 +36,9 @@ else
     exit 1
 fi
 
-# source script to get additional commands
-. $(dirname "${0}")/git_commands.sh
+# load additional script function libraries
+# "load_script_library.sh" must be on the path
+. load_script_library.sh basic
 
 ROOT=`abspath "$ROOT"`
 IFS=$'\n'

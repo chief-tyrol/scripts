@@ -41,8 +41,13 @@ else
     exit 1
 fi
 
-# source script to get additional commands
-. $(dirname "${0}")/git_commands.sh
+function seperator() {
+    echo "----------------------------------------"
+}
+
+# load additional script function libraries
+# "load_script_library.sh" must be on the path
+. load_script_library.sh basic git
 
 ROOT=`abspath "$ROOT"`
 IFS=$'\n'

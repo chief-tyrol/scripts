@@ -22,33 +22,13 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Toolbox of utility methods for interacting with git
 #
-
-
-function seperator() {
-    echo "----------------------------------------"
-}
-
-
-# generate absolute path from relative path
-# $1     : relative filename
-# return : absolute path
 #
-# http://stackoverflow.com/questions/3915040/bash-fish-command-to-print-absolute-path-to-a-file
-function abspath() {
-    if [ -d "${1}" ]; then
-        # dir
-        (cd "${1}"; pwd)
-    elif [ -f "${1}" ]; then
-        # file
-        if [[ $1 == */* ]]; then
-            echo "$(cd "${1%/*}"; pwd)/${1##*/}"
-        else
-            echo "$(pwd)/$1"
-        fi
-    fi
-}
+# Script library - Git utilities
+
+# load additional script function libraries
+# "load_script_library.sh" must be on the path
+. load_script_library.sh basic
 
 function is_git_repo() {
     git --no-optional-locks status 2>/dev/null 1>&2
