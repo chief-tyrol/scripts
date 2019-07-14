@@ -72,8 +72,20 @@ for folder in `ls -1 "${ROOT}"`; do
     # run the actual maven clean
     mvn clean >/dev/null 2>&1
 
-    # after running mvn clean, also clear out any dependency reduced poms
-    find . -name "dependency-reduced-pom.xml" -delete
+    OTHER_FILES=(
+        pom.xml.bak
+        pom.xml.tag
+        pom.xml.releaseBackup
+        pom.xml.versionsBackup
+        pom.xml.next
+        dependency-reduced-pom.xml
+        release.properties
+    )
+
+    # clear out any other cruft maven files that may have accumulated
+    for file in "${OTHER_FILES[@]}"; do
+        find . -name "${file}" -delete
+    done
 
     echo " done!"
 done
