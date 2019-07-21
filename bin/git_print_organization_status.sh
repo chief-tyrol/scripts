@@ -63,13 +63,15 @@ if [ ! -d "${ROOT}" ]; then
 fi
 
 placeholder=''
-REPOS=('repository' "${placeholder}")
-CHANGES=('uncommitted changes' "${placeholder}")
-BRANCHES=('branch' "${placeholder}")
-REMOTES=('tracking' "${placeholder}")
-REMOTE_STATUSES=('commit delta with remote' "${placeholder}")
+COLUMN_1=('Organization' "${placeholder}")
+REPOS=('Repository' "${placeholder}")
+CHANGES=('Uncommitted Changes' "${placeholder}")
+BRANCHES=('Branch' "${placeholder}")
+REMOTES=('Tracking' "${placeholder}")
+REMOTE_STATUSES=('Commit Delta With Remote' "${placeholder}")
 
 # initialize variables
+COLUMN_1_STRLEN='0'
 MAX_REPO_STR_LEN='0'
 CHANGES_STR_LEN='0'
 BRANCHES_STR_LEN='0'
@@ -92,7 +94,7 @@ for folder in `ls -1 "${ROOT}"`; do
         # skip non-repos
         continue
     fi
-
+    COLUMN_1+=("$(basename "${ROOT}")")
     REPOS+=("${folder}")
 
     changes=$(if [ "$(local_git_changes_exist)" == "true" ]; then echo "exist"; else echo "none"; fi )
@@ -113,6 +115,7 @@ done
 
 # calculate the longest line in each column
 for i in $(seq 0 1 $(( ${#REPOS[@]} - 1)) ); do
+    COLUMN_1_STRLEN=$(max "${COLUMN_1_STRLEN}" $(strlen "${COLUMN_1[${i}]}"))
     MAX_REPO_STR_LEN=$(max "${MAX_REPO_STR_LEN}" $(strlen "${REPOS[${i}]}"))
     CHANGES_STR_LEN=$(max "${CHANGES_STR_LEN}" $(strlen "${CHANGES[${i}]}"))
     BRANCHES_STR_LEN=$(max "${BRANCHES_STR_LEN}" $(strlen "${BRANCHES[${i}]}"))
@@ -121,13 +124,22 @@ for i in $(seq 0 1 $(( ${#REPOS[@]} - 1)) ); do
 done
 
 # now that we know the size of each column, add the sub-header separators
+COLUMN_1[1]=$(repeat_string '-' ${COLUMN_1_STRLEN})
 REPOS[1]=$(repeat_string '-' ${MAX_REPO_STR_LEN})
 CHANGES[1]=$(repeat_string '-' ${CHANGES_STR_LEN})
 BRANCHES[1]=$(repeat_string '-' ${BRANCHES_STR_LEN})
 REMOTES[1]=$(repeat_string '-' ${REMOTES_STR_LEN})
 REMOTE_STATUSES[1]=$(repeat_string '-' ${REMOTE_STATUSES_STR_LEN})
 
+COLUMN_1+=("${COLUMN_1[1]}")
+REPOS+=("${REPOS[1]}")
+CHANGES+=("${CHANGES[1]}")
+BRANCHES+=("${BRANCHES[1]}")
+REMOTES+=("${REMOTES[1]}")
+REMOTE_STATUSES+=("${REMOTE_STATUSES[1]}")
+
 for i in $(seq 0 1 $(( ${#REPOS[@]} - 1)) ); do
+    column_1="${COLUMN_1[${i}]}"
     repo="${REPOS[${i}]}"
     changes="${CHANGES[${i}]}"
     branch="${BRANCHES[${i}]}"
@@ -147,11 +159,12 @@ for i in $(seq 0 1 $(( ${#REPOS[@]} - 1)) ); do
     fi
 
     printf "\
+| ${prefix}%-$(( ${COLUMN_1_STRLEN} + ${extraPadding} ))s${suffix}\
 | ${prefix}%-$(( ${MAX_REPO_STR_LEN} + ${extraPadding} ))s${suffix}\
 | ${prefix}%-$(( ${CHANGES_STR_LEN} + ${extraPadding} ))s${suffix}\
 | ${prefix}%-$(( ${BRANCHES_STR_LEN} + ${extraPadding} ))s${suffix}\
 | ${prefix}%-$(( ${REMOTES_STR_LEN} + ${extraPadding} ))s${suffix}\
 | ${prefix}%-$(( ${REMOTE_STATUSES_STR_LEN} + ${extraPadding} ))s${suffix}\
 |\n" \
-    "${repo}" "${changes}" "${branch}" "${remote}" "${status}"
+    "${column_1}" "${repo}" "${changes}" "${branch}" "${remote}" "${status}"
 done
