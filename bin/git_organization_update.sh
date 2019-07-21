@@ -22,14 +22,17 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-
 if [ "${#}" == "0" ]; then
     ROOT="$(pwd)"
 elif [ "${#}" == "1" ]; then
     ROOT="${1}"
 else
-    echo "Usage: ${0} [folder]"
-    echo "Update all git projects in subfolders of [folder]. If [folder] is not provided, it defaults to the current working directory"
+    echo "Usage: ${0} [parent folder]"
+    echo "Update all git repositories which are subdirectories of [parent folder]."
+    echo "If [parent folder] is not provided, it defaults to the current working directory."
+    echo ""
+    echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
+    echo ""
     echo "e.g, if your git folder layout looked like:"
     echo ""
     echo "  git"
