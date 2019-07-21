@@ -64,19 +64,22 @@ fi
 
 placeholder=''
 COLUMN_1=('Organization' "${placeholder}")
-REPOS=('Repository' "${placeholder}")
-CHANGES=('Uncommitted Changes' "${placeholder}")
-BRANCHES=('Branch' "${placeholder}")
-REMOTES=('Tracking' "${placeholder}")
-REMOTE_STATUSES=('Commit Delta With Remote' "${placeholder}")
+COLUMN_2=('Repository' "${placeholder}")
+COLUMN_3=('Uncommitted Changes' "${placeholder}")
+COLUMN_4=('Branch' "${placeholder}")
+COLUMN_5=('Tracking' "${placeholder}")
+COLUMN_6=('Commit Delta With Remote' "${placeholder}")
+
+# must be manually modified if column count changes
+COLUMNS_COUNT=6
 
 # initialize variables
 COLUMN_1_STRLEN='0'
-MAX_REPO_STR_LEN='0'
-CHANGES_STR_LEN='0'
-BRANCHES_STR_LEN='0'
-REMOTES_STR_LEN='0'
-REMOTE_STATUSES_STR_LEN='0'
+COLUMN_2_STRLEN='0'
+COLUMN_3_STRLEN='0'
+COLUMN_4_STRLEN='0'
+COLUMN_5_STRLEN='0'
+COLUMN_6_STRLEN='0'
 
 for folder in `ls -1 "${ROOT}"`; do
 
@@ -95,76 +98,80 @@ for folder in `ls -1 "${ROOT}"`; do
         continue
     fi
     COLUMN_1+=("$(basename "${ROOT}")")
-    REPOS+=("${folder}")
+    COLUMN_2+=("${folder}")
 
     changes=$(if [ "$(local_git_changes_exist)" == "true" ]; then echo "exist"; else echo "none"; fi )
-    CHANGES+=("${changes}")
+    COLUMN_3+=("${changes}")
 
-    BRANCHES+=("$(parse_git_branch_name)")
+    COLUMN_4+=("$(parse_git_branch_name)")
 
     remote="$(parse_git_remote_branch_name)"
 
     if [ -z "${remote}" ]; then
-        REMOTES+=('none')
-        REMOTE_STATUSES+=('N/A')
+        COLUMN_5+=('none')
+        COLUMN_6+=('N/A')
     else
-        REMOTES+=("${remote}")
-        REMOTE_STATUSES+=("$(compare_local_git_branch_with_remote)")
+        COLUMN_5+=("${remote}")
+        COLUMN_6+=("$(compare_local_git_branch_with_remote)")
     fi
 done
 
 # calculate the longest line in each column
-for i in $(seq 0 1 $(( ${#REPOS[@]} - 1)) ); do
-    COLUMN_1_STRLEN=$(max "${COLUMN_1_STRLEN}" $(strlen "${COLUMN_1[${i}]}"))
-    MAX_REPO_STR_LEN=$(max "${MAX_REPO_STR_LEN}" $(strlen "${REPOS[${i}]}"))
-    CHANGES_STR_LEN=$(max "${CHANGES_STR_LEN}" $(strlen "${CHANGES[${i}]}"))
-    BRANCHES_STR_LEN=$(max "${BRANCHES_STR_LEN}" $(strlen "${BRANCHES[${i}]}"))
-    REMOTES_STR_LEN=$(max "${REMOTES_STR_LEN}" $(strlen "${REMOTES[${i}]}"))
-    REMOTE_STATUSES_STR_LEN=$(max "${REMOTE_STATUSES_STR_LEN}" $(strlen "${REMOTE_STATUSES[${i}]}"))
+for row in $(seq 0 1 $(( ${#COLUMN_1[@]} - 1)) ); do
+
+    # column variables are one indexed
+    for column in $(seq 1 1 $(( ${COLUMNS_COUNT})) ); do
+
+        # dynamically calculate variable names
+        lengthName="COLUMN_${column}_STRLEN"
+        specificColumnArrayName="COLUMN_${column}[${row}]"
+        thisLength=$(strlen "${!specificColumnArrayName}")
+
+        # technically don't need eval + export, but IDE yells if it's not done this way
+        eval export "${lengthName}=$(max "${!lengthName}" "${thisLength}")"
+    done
 done
 
-# now that we know the size of each column, add the sub-header separators
-COLUMN_1[1]=$(repeat_string '-' ${COLUMN_1_STRLEN})
-REPOS[1]=$(repeat_string '-' ${MAX_REPO_STR_LEN})
-CHANGES[1]=$(repeat_string '-' ${CHANGES_STR_LEN})
-BRANCHES[1]=$(repeat_string '-' ${BRANCHES_STR_LEN})
-REMOTES[1]=$(repeat_string '-' ${REMOTES_STR_LEN})
-REMOTE_STATUSES[1]=$(repeat_string '-' ${REMOTE_STATUSES_STR_LEN})
+# Now that we know the size of each column, add the sub-header separators.
+# Column variables are one indexed
+for column in $(seq 1 1 $(( ${COLUMNS_COUNT})) ); do
 
-COLUMN_1+=("${COLUMN_1[1]}")
-REPOS+=("${REPOS[1]}")
-CHANGES+=("${CHANGES[1]}")
-BRANCHES+=("${BRANCHES[1]}")
-REMOTES+=("${REMOTES[1]}")
-REMOTE_STATUSES+=("${REMOTE_STATUSES[1]}")
+    # dynamically calculate variable names
+    lengthName="COLUMN_${column}_STRLEN"
+    columnArrayName="COLUMN_${column}"
+    specificColumnArrayName="${columnArrayName}[1]"
+    text=$(repeat_string '-' ${!lengthName})
 
-for i in $(seq 0 1 $(( ${#REPOS[@]} - 1)) ); do
-    column_1="${COLUMN_1[${i}]}"
-    repo="${REPOS[${i}]}"
-    changes="${CHANGES[${i}]}"
-    branch="${BRANCHES[${i}]}"
-    remote="${REMOTES[${i}]}"
-    status="${REMOTE_STATUSES[${i}]}"
+    eval "${specificColumnArrayName}=${text}"
+    eval "${columnArrayName}+=(\"${text}\")"
+done
 
+# actually print out the data
+for row in $(seq 0 1 $(( ${#COLUMN_1[@]} - 1)) ); do
     # number of extra padding characters to add to account for text formatting
-    extraPadding=1
+    padding=1
 
     prefix=''
     suffix=''
 
-    # make the header row printed in bold
-    if [ "${i}" = "0" ]; then
+    # print the header row in bold
+    if [ "${row}" == "0" ]; then
         prefix=$(echo -e '\e[1m')
         suffix=$(echo -e '\e[0m')
     fi
 
     printf "\
-| ${prefix}%-$(( ${COLUMN_1_STRLEN} + ${extraPadding} ))s${suffix}\
-| ${prefix}%-$(( ${MAX_REPO_STR_LEN} + ${extraPadding} ))s${suffix}\
-| ${prefix}%-$(( ${CHANGES_STR_LEN} + ${extraPadding} ))s${suffix}\
-| ${prefix}%-$(( ${BRANCHES_STR_LEN} + ${extraPadding} ))s${suffix}\
-| ${prefix}%-$(( ${REMOTES_STR_LEN} + ${extraPadding} ))s${suffix}\
-| ${prefix}%-$(( ${REMOTE_STATUSES_STR_LEN} + ${extraPadding} ))s${suffix}\
+| ${prefix}%-$(( ${COLUMN_1_STRLEN} + ${padding} ))s${suffix}\
+| ${prefix}%-$(( ${COLUMN_2_STRLEN} + ${padding} ))s${suffix}\
+| ${prefix}%-$(( ${COLUMN_3_STRLEN} + ${padding} ))s${suffix}\
+| ${prefix}%-$(( ${COLUMN_4_STRLEN} + ${padding} ))s${suffix}\
+| ${prefix}%-$(( ${COLUMN_5_STRLEN} + ${padding} ))s${suffix}\
+| ${prefix}%-$(( ${COLUMN_6_STRLEN} + ${padding} ))s${suffix}\
 |\n" \
-    "${column_1}" "${repo}" "${changes}" "${branch}" "${remote}" "${status}"
+    "${COLUMN_1[${row}]}" \
+    "${COLUMN_2[${row}]}" \
+    "${COLUMN_3[${row}]}" \
+    "${COLUMN_4[${row}]}" \
+    "${COLUMN_5[${row}]}" \
+    "${COLUMN_6[${row}]}"
 done
