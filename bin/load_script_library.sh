@@ -23,9 +23,8 @@
 #    SOFTWARE.
 
 # get the directory this script is defined in.
-# based on an answer in the comments to https://stackoverflow.com/a/246128
 if [ -z "${__TMP_LIB_DIR:-}" ]; then
-    __TMP_LIB_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/../bashlib"
+    __TMP_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE}")"; pwd -P )/../bashlib"
 fi
 
 __TMP_RECURSION_DEPTH="${__TMP_RECURSION_DEPTH:-0}"
