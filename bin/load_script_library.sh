@@ -22,28 +22,29 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# get the directory this script is defined in.
+# Calculate the bash script library directory
 if [ -z "${__TMP_LIB_DIR:-}" ]; then
-    __TMP_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE}")"; pwd -P )/../bashlib"
+    __TMP_LIB_DIR="$(dirname "$(dirname "$(realpath.sh "${BASH_SOURCE[0]}")")")/bashlib"
 fi
 
 __TMP_RECURSION_DEPTH="${__TMP_RECURSION_DEPTH:-0}"
 
-__TMP_RECURSION_DEPTH=$((${__TMP_RECURSION_DEPTH} + 1))
+__TMP_RECURSION_DEPTH=$((__TMP_RECURSION_DEPTH + 1))
 
 if [ "${#}" == "0" ]; then
     # no names provided, source all libraries
-    for library in $(ls -1 --color=never "${__TMP_LIB_DIR}/script_library_"*".sh"); do
+    for library in "${__TMP_LIB_DIR}"/script_library_*.sh; do
+        # shellcheck source=/dev/null
         . "${library}"
     done
-elif [ "${#}" == "1" ] && [ "${1}" == "--help" ]; then
+elif [[ "${#}" == "1" && ( "${1}" == "--help" || "${1}" == "-h" ) ]]; then
     echo "Usage: ${0} [library 1] [library 2] ..."
     echo "If libraries are specified, only those will be loaded."
     echo "If no libraries are specified, all supported libraries will be loaded."
     echo ""
     echo "Supported script libraries:"
-    for library in $(ls -1 --color=never "${__TMP_LIB_DIR}/script_library_"*".sh"); do
-        echo "  - $(basename ${library} | sed -e 's/script_library_\(.*\).sh/\1/')"
+    for library in "${__TMP_LIB_DIR}"/script_library_*.sh; do
+        echo "  - $(basename "${library}" | sed -e 's/script_library_\(.*\).sh/\1/')"
     done
 else
     for library_name in "${@}"; do
@@ -58,12 +59,13 @@ else
             # set dynamically generated variable name
             eval export "${__TMP_LOADED_ENV_VAR_NAME}=true"
 
+            # shellcheck source=/dev/null
             . "${__TMP_LIB_DIR}/script_library_${library_name}.sh"
         fi
     done
 fi
 
-__TMP_RECURSION_DEPTH=$((${__TMP_RECURSION_DEPTH} - 1))
+__TMP_RECURSION_DEPTH=$((__TMP_RECURSION_DEPTH - 1))
 
 # since scripts are expected to source this script,
 # unset variables before we exit to avoid polluting env
@@ -74,6 +76,7 @@ if [ "${__TMP_RECURSION_DEPTH}" == "0" ]; then
     unset __TMP_LIB_DIR
 
     for kv in $(env | grep '__LOADED_SCRIPT_LIBRARY_'); do
+        # shellcheck disable=SC2001
         k=$(echo "${kv}" | sed -e "s/\(.*\)=.*/\1/")
         unset "${k}"
     done

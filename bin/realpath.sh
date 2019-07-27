@@ -22,42 +22,28 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
+# script based on https://stackoverflow.com/a/1116890
 
-# Script for adding bluray support to VLC on linux, based on https://askubuntu.com/a/579156
-#
-# If needed, makemv forum post for license key: https://www.makemkv.com/forum/viewtopic.php?f=5&t=1053
+TARGET_FILE="${1:-}"
 
-
-if [ "${USER:-}" != "root" ]; then
-  echo "[WARNING] \"${0}\" must be run as root!"
-  exec sudo "${0}"
+if [[ -z "${TARGET_FILE}" || "${TARGET_FILE}" == "-h" || "${TARGET_FILE}" == "--help" ]]; then
+  >&2 echo "Usage: ${0:-realpath.sh} FILE"
+  >&2 echo "Recursively resolves FILE, equivalent behavior to \`readlink -f FILE\`, but compatible with BSD based systems"
+  exit 1
 fi
 
-set -x
+cd "$(dirname "${TARGET_FILE}")" || exit 1
+TARGET_FILE="$(basename "${TARGET_FILE}")"
 
-# remove open source libraries, since they conflict
-apt remove -y libaacs0 libbdplus0
+# Iterate down a (possible) chain of symlinks
+while [ -L "$TARGET_FILE" ]; do
+    TARGET_FILE="$(readlink "${TARGET_FILE}")"
+    cd "$(dirname "${TARGET_FILE}")" || exit 1
+    TARGET_FILE=$(basename "${TARGET_FILE}")
+done
 
-# Add PPA
-add-apt-repository -y ppa:heyarje/makemkv-beta
-apt update
-
-# install closed-source codecs
-apt install -y makemkv-bin makemkv-oss
-
-# update search index
-updatedb
-
-# locate installed DLL
-cd "$(dirname "$(locate libmmbd.so.0 | head -n 1)")" || exit 1
-
-# create symlinks for VLC to use
-if [ ! -f "libaacs.so.0" ]; then
-    ln -s libmmbd.so.0 libaacs.so.0
-fi
-
-if [ ! -f "libbdplus.so.0" ]; then
-    ln -s libmmbd.so.0 libbdplus.so.0
-fi
-
-{ set +x; } 2> /dev/null
+# Compute the canonicalized name by finding the physical path
+# for the directory we're in and appending the target file.
+PHYS_DIR="$(pwd -P)"
+RESULT="${PHYS_DIR}/${TARGET_FILE}"
+echo "${RESULT}"
