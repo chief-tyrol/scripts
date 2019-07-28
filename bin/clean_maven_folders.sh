@@ -27,12 +27,12 @@
 # Cleans build artifacts from all maven projects in a folder
 
 if [ "${#}" == "0" ]; then
-    ROOT="`pwd`"
+    ROOT="$(pwd)"
 elif [ "${#}" == "1" ]; then
     ROOT="${1}"
 else
-    echo "Usage: $0 [folder]"
-    echo "Runs \`mvn clean\` in subfolders of [folder], or the current working directory if [folder] is not provided"
+    >&2 echo "Usage: $0 [folder]"
+    >&2 echo "Runs \`mvn clean\` in subfolders of [folder], or the current working directory if [folder] is not provided"
     exit 1
 fi
 
@@ -40,54 +40,52 @@ fi
 # "load_script_library.sh" must be on the path
 . load_script_library.sh basic
 
-ROOT=`abspath "$ROOT"`
-IFS=$'\n'
+ROOT="$(abspath "${ROOT}")"
 
 if [ ! -d "${ROOT}" ]; then
-    echo "[ERROR] \"${ROOT}\" is not a directory"
+    >&2 echo "[ERROR] \"${ROOT}\" is not a directory"
     exit 1
 fi
 
+_OTHER_MAVEN_FILES=(
+    pom.xml.bak
+    pom.xml.tag
+    pom.xml.releaseBackup
+    pom.xml.versionsBackup
+    pom.xml.next
+    dependency-reduced-pom.xml
+    release.properties
+)
+
+ORIGINAL_DIR="$(pwd)"
 echo "[INFO] Cleaning projects in \"${ROOT}\""
 
-for folder in `ls -1 "${ROOT}"`; do
-
-    # make sure we start in the correct directory
-    cd "${ROOT}"
+for folder in "${ROOT}"/*; do
 
     if [ ! -d "${folder}" ]; then
         # not a folder, ignore
         continue
     fi
 
-    cd "${folder}"
+    cd "${folder}" || exit 1
 
     if [ ! -f 'pom.xml' ]; then
         # not a maven project, ignore
         continue
     fi
 
-    echo -n "[INFO]   Cleaning ${ROOT}/${folder}..."
+    echo -n "[INFO]   Cleaning ${folder}..."
 
     # run the actual maven clean
     mvn clean >/dev/null 2>&1
 
-    OTHER_FILES=(
-        pom.xml.bak
-        pom.xml.tag
-        pom.xml.releaseBackup
-        pom.xml.versionsBackup
-        pom.xml.next
-        dependency-reduced-pom.xml
-        release.properties
-    )
-
     # clear out any other cruft maven files that may have accumulated
-    for file in "${OTHER_FILES[@]}"; do
+    for file in "${_OTHER_MAVEN_FILES[@]}"; do
         find . -name "${file}" -delete
     done
 
     echo " done!"
 done
 
+cd "${ORIGINAL_DIR}" || exit 1
 echo "[INFO] Cleaned projects in \"${ROOT}\""

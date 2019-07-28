@@ -29,20 +29,20 @@ if [ "${#}" == "0" ]; then
 elif [ "${#}" == "1" ]; then
     ROOT="${1}"
 else
-    echo "Usage: ${0} [parent folder]"
-    echo "Update all git repositories which are subdirectories of [parent folder]."
-    echo "If [parent folder] is not provided, it defaults to the current working directory."
-    echo ""
-    echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
-    echo ""
-    echo "e.g, if your git folder layout looked like:"
-    echo ""
-    echo "  git"
-    echo "   \-organization"
-    echo "     \-repo1"
-    echo "     \-repo2"
-    echo ""
-    echo "then you could run ${0} \"git/organization\" to update both repos"
+    >&2 echo "Usage: ${0} [parent folder]"
+    >&2 echo "Update all git repositories which are subdirectories of [parent folder]."
+    >&2 echo "If [parent folder] is not provided, it defaults to the current working directory."
+    >&2 echo ""
+    >&2 echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
+    >&2 echo ""
+    >&2 echo "e.g, if your git folder layout looked like:"
+    >&2 echo ""
+    >&2 echo "  git"
+    >&2 echo "   \-organization"
+    >&2 echo "     \-repo1"
+    >&2 echo "     \-repo2"
+    >&2 echo ""
+    >&2 echo "then you could run ${0} \"git/organization\" to update both repos"
     exit 1
 fi
 
@@ -50,30 +50,20 @@ fi
 # "load_script_library.sh" must be on the path
 . load_script_library.sh basic
 
-ROOT=`abspath "$ROOT"`
-IFS=$'\n'
+ROOT="$(abspath "${ROOT}")"
 
 if [ ! -d "${ROOT}" ]; then
     echo "[ERROR] \"${ROOT}\" is not a directory"
     exit 1
 fi
 
-for folder in `ls -1 "${ROOT}"`; do
-
-    # make sure we start in the correct directory
-    cd "${ROOT}"
+for folder in "${ROOT}"/*; do
 
     if [ ! -d "${folder}" ]; then
         # skip non-folders
         continue
     fi
 
-#prefix=$(echo -e '\e[1m')
-#        suffix=$(echo -e '\e[0m')
-
-    cd "${folder}"
-
     echo ''
-    "${DELEGATE}"
-    echo ''
+    "${DELEGATE}" "${folder}"
 done

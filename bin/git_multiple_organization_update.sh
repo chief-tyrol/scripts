@@ -22,6 +22,7 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
+# note that this script must be in the $PATH
 DELEGATE="git_organization_update.sh"
 
 if [ "${#}" == "0" ]; then
@@ -29,11 +30,11 @@ if [ "${#}" == "0" ]; then
 elif [ "${#}" == "1" ]; then
     ROOT="${1}"
 else
-    echo "Usage: ${0} [parent folder]"
-    echo "Runs \"${DELEGATE}\" on all subdirectories of [parent folder]."
-    echo "If [parent folder] is not provided, it defaults to the current working directory."
-    echo ""
-    echo "See the documentation for ${DELEGATE} for details"
+    >&2 echo "Usage: ${0} [parent folder]"
+    >&2 echo "Runs \"${DELEGATE}\" on all subdirectories of [parent folder]."
+    >&2 echo "If [parent folder] is not provided, it defaults to the current working directory."
+    >&2 echo ""
+    >&2 echo "See the documentation for ${DELEGATE} for details"
     exit 1
 fi
 
@@ -41,25 +42,19 @@ fi
 # "load_script_library.sh" must be on the path
 . load_script_library.sh basic
 
-ROOT=`abspath "$ROOT"`
-IFS=$'\n'
+ROOT="$(abspath "${ROOT}")"
 
 if [ ! -d "${ROOT}" ]; then
-    echo "[ERROR] \"${ROOT}\" is not a directory"
+    >&2 echo "[ERROR] \"${ROOT}\" is not a directory"
     exit 1
 fi
 
-for folder in `ls -1 "${ROOT}"`; do
-
-    # make sure we start in the correct directory
-    cd "${ROOT}"
+for folder in "${ROOT}"/*; do
 
     if [ ! -d "${folder}" ]; then
         # skip non-directories
         continue
     fi
 
-    cd "${folder}"
-
-    "${DELEGATE}" "${ROOT}/${folder}"
+    "${DELEGATE}" "${folder}"
 done

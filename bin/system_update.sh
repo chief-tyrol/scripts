@@ -22,7 +22,6 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-
 # Runs updates
 
 if [ "${USER:-}" != "root" ]; then
@@ -30,9 +29,11 @@ if [ "${USER:-}" != "root" ]; then
   exec sudo "${0}"
 fi
 
+set -x
+
 apt update
 apt upgrade -y
 apt dist-upgrade -y
-apt autoclean -y
 apt autoremove -y
+apt autoclean -y
 apt clean -y

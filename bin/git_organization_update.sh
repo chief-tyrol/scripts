@@ -27,103 +27,94 @@ if [ "${#}" == "0" ]; then
 elif [ "${#}" == "1" ]; then
     ROOT="${1}"
 else
-    echo "Usage: ${0} [parent folder]"
-    echo "Update all git repositories which are subdirectories of [parent folder]."
-    echo "If [parent folder] is not provided, it defaults to the current working directory."
-    echo ""
-    echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
-    echo ""
-    echo "e.g, if your git folder layout looked like:"
-    echo ""
-    echo "  git"
-    echo "   \-organization"
-    echo "     \-repo1"
-    echo "     \-repo2"
-    echo ""
-    echo "then you could run ${0} \"git/organization\" to update both repos"
+    >&2 echo "Usage: ${0} [parent folder]"
+    >&2 echo "Update all git repositories which are subdirectories of [parent folder]."
+    >&2 echo "If [parent folder] is not provided, it defaults to the current working directory."
+    >&2 echo ""
+    >&2 echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
+    >&2 echo ""
+    >&2 echo "e.g, if your git folder layout looked like:"
+    >&2 echo ""
+    >&2 echo "  git"
+    >&2 echo "   \-organization"
+    >&2 echo "     \-repo1"
+    >&2 echo "     \-repo2"
+    >&2 echo ""
+    >&2 echo "then you could run ${0} \"git/organization\" to update both repos"
     exit 1
 fi
-
-function seperator() {
-    echo "----------------------------------------"
-}
 
 # load additional script function libraries
 # "load_script_library.sh" must be on the path
 . load_script_library.sh basic git
 
-ROOT=`abspath "$ROOT"`
-IFS=$'\n'
+function print_seperator() {
+    echo "----------------------------------------"
+}
+
+ROOT="$(abspath "${ROOT}")"
 
 if [ ! -d "${ROOT}" ]; then
-    echo "[ERROR] \"${ROOT}\" is not a directory"
+    >&2 echo "[ERROR] \"${ROOT}\" is not a directory"
     exit 1
 fi
 
-seperator
+print_seperator
 echo "Updating all git repos in subfolders of \"${ROOT}\""
+print_seperator
 
-for folder in `ls -1 "${ROOT}"`; do
-
-    # make sure we start in the correct directory
-    cd "${ROOT}"
+for folder in "${ROOT}"/*; do
 
     if [ ! -d "${folder}" ]; then
         # skip non-folders
         continue
     fi
 
-    cd "${folder}"
+    cd "${folder}" || exit 1
 
     if [ "$(is_git_repo)" != "true" ]; then
         # skip non-repos
         continue
     fi
 
-    # get the branch
-    branch=`parse_git_branch_name`
+    # get the branch name
+    branch="$(parse_git_branch_name)"
 
-    seperator
-    echo "Updating \"${folder}\" (currently on branch ${branch})"
+    echo "\"$(basename "${folder}")\" being updated (active branch: ${branch})"
 
     if [ "$(local_git_changes_exist)" == 'false' ]; then
-        echo -n "Working directory clean, performing \`git pull\`... "
+        echo -n 'Running "git pull"...  '
 
-        output=$(git pull 2>&1)
-
-        if [ "${?}" != "0" ]; then
-            echo "failed!"
-            echo "error performing \`git pull\`, console output:"
+        if ! output=$(git pull 2>&1); then
+            echo 'FAILED:'
             echo "${output}"
         else
             echo 'done!'
         fi
+    else
+        echo 'Uncommitted files, skipping "git pull"'
     fi
 
-    echo -n "Performing \`git fetch\`... "
+    echo -n 'Running "git fetch"... '
 
     # always do a git fetch (even if the working copy is dirty) in order to prune dead remote branches
-    output=$(git fetch --prune 2>&1)
-
-    if [ "${?}" != "0" ]; then
-        echo "failed!"
-        echo "error performing \`git fetch\`, console output:"
+    if ! output=$(git fetch --prune 2>&1); then
+        echo 'FAILED:'
         echo "${output}"
     else
         echo 'done!'
     fi
 
-    echo -n "Performing \`git gc\`... "
+    echo -n 'Running "git gc"...    '
 
     # always do a git gc in order to clean repos
-    output=$(git gc 2>&1)
-
-    if [ "${?}" != "0" ]; then
-        echo "failed!"
-        echo "error performing \`git gc\`, console output:"
+    if ! output=$(git gc 2>&1); then
+        echo 'FAILED:'
         echo "${output}"
     else
         echo 'done!'
     fi
+
+    print_seperator
 
 done

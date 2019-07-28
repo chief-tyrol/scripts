@@ -22,27 +22,25 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-DELEGATE="git_print_repo_status.sh"
-
 if [ "${#}" == "0" ]; then
     ROOT="$(pwd)"
 elif [ "${#}" == "1" ]; then
     ROOT="${1}"
 else
-    echo "Usage: ${0} [parent folder]"
-    echo "Update all git repositories which are subdirectories of [parent folder]."
-    echo "If [parent folder] is not provided, it defaults to the current working directory."
-    echo ""
-    echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
-    echo ""
-    echo "e.g, if your git folder layout looked like:"
-    echo ""
-    echo "  git"
-    echo "   \-organization"
-    echo "     \-repo1"
-    echo "     \-repo2"
-    echo ""
-    echo "then you could run ${0} \"git/organization\" to update both repos"
+    >&2 echo "Usage: ${0} [parent folder]"
+    >&2 echo "Update all git repositories which are subdirectories of [parent folder]."
+    >&2 echo "If [parent folder] is not provided, it defaults to the current working directory."
+    >&2 echo ""
+    >&2 echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
+    >&2 echo ""
+    >&2 echo "e.g, if your git folder layout looked like:"
+    >&2 echo ""
+    >&2 echo "  git"
+    >&2 echo "   \-organization"
+    >&2 echo "     \-repo1"
+    >&2 echo "     \-repo2"
+    >&2 echo ""
+    >&2 echo "then you could run ${0} \"git/organization\" to update both repos"
     exit 1
 fi
 
@@ -54,8 +52,7 @@ function seperator() {
 # "load_script_library.sh" must be on the path
 . load_script_library.sh basic git math strings
 
-ROOT=`abspath "$ROOT"`
-IFS=$'\n'
+ROOT="$(abspath "${ROOT}")"
 
 if [ ! -d "${ROOT}" ]; then
     echo "[ERROR] \"${ROOT}\" is not a directory"
@@ -81,29 +78,24 @@ COLUMN_4_STRLEN='0'
 COLUMN_5_STRLEN='0'
 COLUMN_6_STRLEN='0'
 
-for folder in `ls -1 "${ROOT}"`; do
-
-    # make sure we start in the correct directory
-    cd "${ROOT}"
+for folder in "${ROOT}"/*; do
 
     if [ ! -d "${folder}" ]; then
         # skip non-folders
         continue
     fi
 
-    cd "${folder}"
+    cd "${folder}" || exit 1
 
     if [ "$(is_git_repo)" != "true" ]; then
         # skip non-repos
         continue
     fi
-    COLUMN_1+=("$(basename "${ROOT}")")
-    COLUMN_2+=("${folder}")
 
-    changes=$(if [ "$(local_git_changes_exist)" == "true" ]; then echo "exist"; else echo "none"; fi )
-    COLUMN_3+=("${changes}")
-
-    COLUMN_4+=("$(parse_git_branch_name)")
+    COLUMN_1+=( "$(basename "${ROOT}")" )
+    COLUMN_2+=( "$(basename "${folder}")" )
+    COLUMN_3+=( "$(if [ "$(local_git_changes_exist)" == "true" ]; then echo "exist"; else echo "none"; fi )" )
+    COLUMN_4+=( "$(parse_git_branch_name)" )
 
     remote="$(parse_git_remote_branch_name)"
 
@@ -120,7 +112,7 @@ done
 for row in $(seq 0 1 $(( ${#COLUMN_1[@]} - 1)) ); do
 
     # column variables are one indexed
-    for column in $(seq 1 1 $(( ${COLUMNS_COUNT})) ); do
+    for column in $(seq 1 1 "${COLUMNS_COUNT}" ); do
 
         # dynamically calculate variable names
         lengthName="COLUMN_${column}_STRLEN"
@@ -134,13 +126,13 @@ done
 
 # Now that we know the size of each column, add the sub-header separators.
 # Column variables are one indexed
-for column in $(seq 1 1 $(( ${COLUMNS_COUNT})) ); do
+for column in $(seq 1 1 "${COLUMNS_COUNT}" ); do
 
     # dynamically calculate variable names
     lengthName="COLUMN_${column}_STRLEN"
     columnArrayName="COLUMN_${column}"
     specificColumnArrayName="${columnArrayName}[1]"
-    text=$(repeat_string '-' ${!lengthName})
+    text=$(repeat_string '-' "${!lengthName}")
 
     eval "${specificColumnArrayName}=${text}"
     eval "${columnArrayName}+=(\"${text}\")"
@@ -161,12 +153,12 @@ for row in $(seq 0 1 $(( ${#COLUMN_1[@]} - 1)) ); do
     fi
 
     printf "\
-| ${prefix}%-$(( ${COLUMN_1_STRLEN} + ${padding} ))s${suffix}\
-| ${prefix}%-$(( ${COLUMN_2_STRLEN} + ${padding} ))s${suffix}\
-| ${prefix}%-$(( ${COLUMN_3_STRLEN} + ${padding} ))s${suffix}\
-| ${prefix}%-$(( ${COLUMN_4_STRLEN} + ${padding} ))s${suffix}\
-| ${prefix}%-$(( ${COLUMN_5_STRLEN} + ${padding} ))s${suffix}\
-| ${prefix}%-$(( ${COLUMN_6_STRLEN} + ${padding} ))s${suffix}\
+| ${prefix}%-$(( COLUMN_1_STRLEN + padding ))s${suffix}\
+| ${prefix}%-$(( COLUMN_2_STRLEN + padding ))s${suffix}\
+| ${prefix}%-$(( COLUMN_3_STRLEN + padding ))s${suffix}\
+| ${prefix}%-$(( COLUMN_4_STRLEN + padding ))s${suffix}\
+| ${prefix}%-$(( COLUMN_5_STRLEN + padding ))s${suffix}\
+| ${prefix}%-$(( COLUMN_6_STRLEN + padding ))s${suffix}\
 |\n" \
     "${COLUMN_1[${row}]}" \
     "${COLUMN_2[${row}]}" \

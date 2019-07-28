@@ -38,11 +38,11 @@ if [ "${#}" == "0" ]; then
         . "${library}"
     done
 elif [[ "${#}" == "1" && ( "${1}" == "--help" || "${1}" == "-h" ) ]]; then
-    echo "Usage: ${0} [library 1] [library 2] ..."
-    echo "If libraries are specified, only those will be loaded."
-    echo "If no libraries are specified, all supported libraries will be loaded."
-    echo ""
-    echo "Supported script libraries:"
+    >&2 echo "Usage: ${0} [library 1] [library 2] ..."
+    >&2 echo "If libraries are specified, only those will be loaded."
+    >&2 echo "If no libraries are specified, all supported libraries will be loaded."
+    >&2 echo ""
+    >&2 echo "Supported script libraries:"
     for library in "${__TMP_LIB_DIR}"/script_library_*.sh; do
         echo "  - $(basename "${library}" | sed -e 's/script_library_\(.*\).sh/\1/')"
     done
