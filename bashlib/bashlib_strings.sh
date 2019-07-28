@@ -27,7 +27,7 @@
 # Script library - string utilities
 
 function strlen() {
-    expr length "${1}"
+  echo "${#1}"
 }
 
 function repeat_string() {

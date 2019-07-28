@@ -44,7 +44,7 @@ elif [[ "${#}" == "1" && ( "${1}" == "--help" || "${1}" == "-h" ) ]]; then
     >&2 echo ""
     >&2 echo "Supported script libraries:"
     for library in "${__TMP_LIB_DIR}"/script_library_*.sh; do
-        echo "  - $(basename "${library}" | sed -e 's/script_library_\(.*\).sh/\1/')"
+        echo "  - $(basename "${library}" | sed -e 's/bashlib_\(.*\).sh/\1/')"
     done
 else
     for library_name in "${@}"; do
@@ -60,7 +60,7 @@ else
             eval export "${__TMP_LOADED_ENV_VAR_NAME}=true"
 
             # shellcheck source=/dev/null
-            . "${__TMP_LIB_DIR}/script_library_${library_name}.sh"
+            . "${__TMP_LIB_DIR}/bashlib_${library_name}.sh"
         fi
     done
 fi
