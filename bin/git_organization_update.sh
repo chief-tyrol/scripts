@@ -80,7 +80,7 @@ for folder in "${ROOT}"/*; do
     # get the branch name
     branch="$(parse_git_branch_name)"
 
-    echo "\"$(basename "${folder}")\" being updated (active branch: ${branch})"
+    echo "Updating \"$(basename "${folder}")\" (active branch: \"${branch}\")"
 
     if [ "$(local_git_changes_exist)" == 'false' ]; then
         echo -n 'Running "git pull"...  '
@@ -92,7 +92,7 @@ for folder in "${ROOT}"/*; do
             echo 'done!'
         fi
     else
-        echo 'Uncommitted files, skipping "git pull"'
+        echo 'Skipping "git pull", uncommitted changes present'
     fi
 
     echo -n 'Running "git fetch"... '
