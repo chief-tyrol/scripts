@@ -25,20 +25,35 @@
 # Updates packages managed by Homebrew
 # https://brew.sh/
 
+function print_seperator() {
+    echo "----------------------------------------"
+}
+
+print_seperator
 echo "Homebrew version:"
 brew --version
 
+echo ""
+print_seperator
 echo "Homebrew configuration:"
 brew config
 
+echo ""
+print_seperator
 echo "Updating Homebrew..."
 brew update
 
+echo ""
+print_seperator
 echo "Upgrading Homebrew..."
 brew upgrade
 
+echo ""
+print_seperator
 echo "Running cleanup..."
 brew cleanup
 
+echo ""
+print_seperator
 echo "Homebrew configuration after upgrades:"
 brew config
