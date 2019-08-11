@@ -32,13 +32,13 @@ echo "Homebrew configuration:"
 brew config
 
 echo "Updating Homebrew..."
-brew update --verbose
+brew update
 
 echo "Upgrading Homebrew..."
-brew upgrade --verbose
+brew upgrade
 
 echo "Running cleanup..."
-brew cleanup --verbose
+brew cleanup
 
-echo "Homebrew version after updates:"
-brew --version
+echo "Homebrew configuration after upgrades:"
+brew config
