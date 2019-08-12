@@ -22,58 +22,73 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Script which can be run on a folder to convert all jpg images in the folder
+# Script which can be run on a FOLDER to convert all jpg images in the FOLDER
 # to 90% quality, and back up each original file named "foo.jpg" to "large foo.jpg"
 #
 # Meant for use with DSLR cameras that produce 15MB+ images, when you don't need to
 # keep images that large
-#
+
 set -e
 
-function now() {
-    date --rfc-3339=second
-}
+# precondition to running the script
+if ! command -v convert > /dev/null 2>&1; then
+  >&2 echo "[FATAL] Unable to find imagemagick on the path"
+  >&2 echo "[FATAL] Please run 'sudo apt install -y imagemagick' first"
+  exit 1
+fi
 
-IFS=$'\n'
-folder="${1:-}"
-iteration=0
+FOLDER=''
 
-if [ -z "$(which convert)" ]; then
-    echo "[`now`][FATAL] Unable to find imagemagick on the path"
-    echo "[`now`][FATAL] Please run 'sudo apt install -y imagemagick' first"
+if [ "${#}" == "0" ]; then
+    FOLDER="$(pwd)"
+elif [ "${#}" == "1" ]; then
+    FOLDER="${1}"
+else
+    >&2 echo "Usage: $0 [folder]"
+    >&2 echo "Changes the quality of jpg images in [folder] to 90, or the current working directory if [folder] is not provided"
     exit 1
 fi
 
-if [ -z "${folder}" ]; then
-    echo "[`now`][FATAL] Must specify folder"
-    exit 1
-fi
+# load additional script function libraries
+# "load_script_library.sh" must be on the path
+. load_script_library.sh basic
 
-echo "[`now`][INFO] Running on folder \"${folder}\""
+# get the full, real path
+FOLDER="$(abspath "$(realpath.sh "${FOLDER}")" )"
 
-for file in $(ls -1 "${folder}"); do
-    let iteration=iteration+1
+echo "[INFO] Running on FOLDER \"${FOLDER}\""
 
-    if [[ "${file}" == large* ]]; then
-        echo "[`now`][WARN] Ignoring ${file}"
-        continue;
-    fi
+ITERATION=0
+FILE_COUNT="$(find "${FOLDER}" -maxdepth 1 ! -name "$(basename "${FOLDER}" )" | wc -l)"
 
-    extension=$(echo "${file}" | awk -F '\\.' '{print $2}')
+for full_file in "${FOLDER}"/*; do
+  ITERATION=$(( ITERATION + 1 ))
 
-    if [ "${extension}" != 'JPG' ] && [ "${extension}" != 'jpg' ]; then
-        echo "[`now`][WARN] Ignoring ${file}"
-        continue;
-    fi
+  LOG_PREFIX="[${ITERATION}/${FILE_COUNT}]"
 
-    new_name=$(echo "${file}" | awk -F '\\.' '{print "large "$1"."$2}')
+  file="$(basename "${full_file}")"
 
-    if [ $((iteration % 8)) == 0 ]; then
-        wait
-    fi
+  if [[ "${file}" == large* ]]; then
+      echo "[WARN]${LOG_PREFIX} Ignoring ${file}"
+      continue;
+  fi
 
-    echo "[`now`][INFO] Currently on iteration #${iteration}, processing ${file}"
+  extension=$(echo "${file}" | awk -F '\\.' '{print $2}')
 
-    mv "${folder}/${file}" "${folder}/${new_name}"
-    convert "${folder}/${new_name}" -quality 90 "${folder}/${file}" &
+  if [ "${extension}" != 'JPG' ] && [ "${extension}" != 'jpg' ]; then
+      echo "[WARN]${LOG_PREFIX} Ignoring ${file}"
+      continue;
+  fi
+
+  new_name=$(echo "${file}" | awk -F '\\.' '{print "large "$1"."$2}')
+
+  if [ $(( ITERATION % 8 )) == 0 ]; then
+      wait
+  fi
+
+  echo "[INFO]${LOG_PREFIX} Processing ${file}"
+
+  mv "${FOLDER}/${file}" "${FOLDER}/${new_name}"
+  convert "${FOLDER}/${new_name}" -quality 90 "${FOLDER}/${file}" &
+
 done
