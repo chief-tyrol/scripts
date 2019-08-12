@@ -29,31 +29,32 @@ function print_seperator() {
     echo "----------------------------------------"
 }
 
+echo "Current Homebrew configuration:"
 print_seperator
-echo "Homebrew version:"
-brew --version
-
-echo ""
-print_seperator
-echo "Homebrew configuration:"
 brew config
-
 echo ""
+echo ""
+
+echo "Updating Homebrew package index..."
 print_seperator
-echo "Updating Homebrew..."
 brew update
-
 echo ""
+echo ""
+
+echo "Upgrading Homebrew packages..."
 print_seperator
-echo "Upgrading Homebrew..."
 brew upgrade
-
 echo ""
+echo ""
+
+echo "Running Homebrew cleanup..."
 print_seperator
-echo "Running cleanup..."
 brew cleanup
-
 echo ""
+echo ""
+
+echo "Updated Homebrew configuration:"
 print_seperator
-echo "Homebrew configuration after upgrades:"
 brew config
+echo ""
+echo ""

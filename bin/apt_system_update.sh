@@ -26,14 +26,36 @@
 
 if [ "${USER:-}" != "root" ]; then
   echo "[WARNING] \"${0}\" must be run as root!"
+  echo ""
   exec sudo "${0}"
 fi
 
-set -x
+function print_seperator() {
+    echo "----------------------------------------"
+}
 
+echo "Updating apt package index..."
+print_seperator
 apt update
+echo ""
+echo ""
+
+echo "Upgrading apt packages..."
+print_seperator
 apt upgrade -y
+echo ""
+echo ""
+
+echo "Performing distribution upgrade of apt packages..."
+print_seperator
 apt dist-upgrade -y
+echo ""
+echo ""
+
+echo "Cleaning apt cache"
+print_seperator
 apt autoremove -y
 apt autoclean -y
 apt clean -y
+echo ""
+echo ""
