@@ -31,7 +31,7 @@
 . load_script_library.sh basic
 
 function is_git_repo() {
-    git --no-optional-locks status 2>/dev/null 1>&2
+    git status 2>/dev/null 1>&2
 
     if [ "${?}" = "0" ]; then
         echo "true"
