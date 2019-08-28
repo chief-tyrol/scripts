@@ -60,7 +60,7 @@ if [ ! -d "${ROOT}" ]; then
 fi
 
 print_seperator
-echo "Updating all git repos in subfolders of \"${ROOT}\""
+printf 'Updating git repos under \"\e[1m%s\e[0m\"\n' "${ROOT}"
 print_seperator
 
 for folder in "${ROOT}"/*; do
@@ -80,10 +80,10 @@ for folder in "${ROOT}"/*; do
     # get the branch name
     branch="$(parse_git_branch_name)"
 
-    printf "Updating \"\e[1m%s\e[0m\" (active branch: \"\e[1m%s\e[0m\")\n" "$(basename "${folder}")" "${branch}"
+    printf "Updating \"\e[1m%s\e[0m\" (branch: \"\e[1m%s\e[0m\")\n" "$(basename "${folder}")" "${branch}"
 
     if [ "$(local_git_changes_exist)" == 'false' ]; then
-        printf '\e[34mRunning "git pull"...  \e[0m'
+        printf '\e[34mRunning  "git pull"...  \e[0m'
 
         if ! output=$(git pull 2>&1); then
             printf '\e[31mFAILED:\e[0m\n'
@@ -95,7 +95,7 @@ for folder in "${ROOT}"/*; do
         printf '\e[33mSkipping "git pull", \e[1muncommitted changes present\e[0m\n'
     fi
 
-    printf '\e[34mRunning "git fetch"... \e[0m'
+    printf '\e[34mRunning  "git fetch"... \e[0m'
 
     # always do a git fetch (even if the working copy is dirty) in order to prune dead remote branches
     if ! output=$(git fetch --prune 2>&1); then
@@ -105,7 +105,7 @@ for folder in "${ROOT}"/*; do
         printf '\e[32mdone!\e[0m\n'
     fi
 
-    printf '\e[34mRunning "git gc"...    \e[0m'
+    printf '\e[34mRunning  "git gc"...    \e[0m'
 
     # always do a git gc in order to clean repos
     if ! output=$(git gc 2>&1); then
