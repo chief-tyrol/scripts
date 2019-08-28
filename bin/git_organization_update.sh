@@ -49,7 +49,7 @@ fi
 . load_script_library.sh basic git
 
 function print_seperator() {
-    echo "----------------------------------------"
+    echo '----------------------------------------'
 }
 
 ROOT="$(abspath "${ROOT}")"
@@ -80,39 +80,39 @@ for folder in "${ROOT}"/*; do
     # get the branch name
     branch="$(parse_git_branch_name)"
 
-    echo "Updating \"$(basename "${folder}")\" (active branch: \"${branch}\")"
+    printf "Updating \"\e[1m%s\e[0m\" (active branch: \"\e[1m%s\e[0m\")\n" "$(basename "${folder}")" "${branch}"
 
     if [ "$(local_git_changes_exist)" == 'false' ]; then
-        echo -n 'Running "git pull"...  '
+        printf '\e[34mRunning "git pull"...  \e[0m'
 
         if ! output=$(git pull 2>&1); then
-            echo 'FAILED:'
+            printf '\e[31mFAILED:\e[0m\n'
             echo "${output}"
         else
-            echo 'done!'
+            printf '\e[32mdone!\e[0m\n'
         fi
     else
-        echo 'Skipping "git pull", uncommitted changes present'
+        printf '\e[33mSkipping "git pull", \e[1muncommitted changes present\e[0m\n'
     fi
 
-    echo -n 'Running "git fetch"... '
+    printf '\e[34mRunning "git fetch"... \e[0m'
 
     # always do a git fetch (even if the working copy is dirty) in order to prune dead remote branches
     if ! output=$(git fetch --prune 2>&1); then
-        echo 'FAILED:'
+        printf '\e[31mFAILED:\e[0m\n'
         echo "${output}"
     else
-        echo 'done!'
+        printf '\e[32mdone!\e[0m\n'
     fi
 
-    echo -n 'Running "git gc"...    '
+    printf '\e[34mRunning "git gc"...    \e[0m'
 
     # always do a git gc in order to clean repos
     if ! output=$(git gc 2>&1); then
-        echo 'FAILED:'
+        printf '\e[31mFAILED:\e[0m\n'
         echo "${output}"
     else
-        echo 'done!'
+        printf '\e[32mdone!\e[0m\n'
     fi
 
     print_seperator
