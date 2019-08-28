@@ -58,3 +58,9 @@ print_seperator
 brew config
 echo ""
 echo ""
+
+echo "Installed packages:"
+print_seperator
+brew list
+echo ''
+echo ''
