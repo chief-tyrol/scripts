@@ -22,9 +22,7 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-#
-#
-# Script library - Basic Bash utilities
+# Script library - Bash utilities for working with files
 
 # load additional script function libraries
 # "load_script_library.sh" must be on the path

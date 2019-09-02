@@ -43,7 +43,7 @@ fi
 
 # load additional script function libraries
 # "load_script_library.sh" must be on the path
-. load_script_library.sh basic
+. load_script_library.sh files
 
 ROOT="$(abspath "${ROOT}")"
 

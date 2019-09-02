@@ -53,7 +53,7 @@ function seperator() {
 
 # load additional script function libraries
 # "load_script_library.sh" must be on the path
-. load_script_library.sh basic git math strings
+. load_script_library.sh files git math strings
 
 ROOT="$(abspath "${ROOT}")"
 

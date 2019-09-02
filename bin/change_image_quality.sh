@@ -52,7 +52,7 @@ fi
 
 # load additional script function libraries
 # "load_script_library.sh" must be on the path
-. load_script_library.sh basic
+. load_script_library.sh files
 
 # get the full, real path
 FOLDER="$(abspath "$(realpath.sh "${FOLDER}")" )"

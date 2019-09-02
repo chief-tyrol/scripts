@@ -28,7 +28,7 @@
 
 # load additional script function libraries
 # "load_script_library.sh" must be on the path
-. load_script_library.sh basic
+. load_script_library.sh files
 
 function is_git_repo() {
     git status 2>/dev/null 1>&2
