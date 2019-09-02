@@ -24,6 +24,9 @@
 
 # script based on https://stackoverflow.com/a/1116890
 
+set -o errexit
+set -o nounset
+
 TARGET_FILE="${1:-}"
 
 if [[ -z "${TARGET_FILE}" || "${TARGET_FILE}" == "-h" || "${TARGET_FILE}" == "--help" ]]; then

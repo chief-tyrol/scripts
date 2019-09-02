@@ -28,7 +28,8 @@
 # Meant for use with DSLR cameras that produce 15MB+ images, when you don't need to
 # keep images that large
 
-set -e
+set -o errexit
+set -o nounset
 
 # precondition to running the script
 if ! command -v convert > /dev/null 2>&1; then

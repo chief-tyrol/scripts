@@ -24,6 +24,9 @@
 
 # Runs updates
 
+set -o errexit
+set -o nounset
+
 if [ "${USER:-}" != "root" ]; then
   echo "[WARNING] \"${0}\" must be run as root!"
   echo ""

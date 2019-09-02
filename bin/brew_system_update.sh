@@ -25,6 +25,9 @@
 # Updates packages managed by Homebrew
 # https://brew.sh/
 
+set -o errexit
+set -o nounset
+
 function print_seperator() {
     echo "----------------------------------------"
 }

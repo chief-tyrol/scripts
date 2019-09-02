@@ -26,6 +26,7 @@
 # https://maven.apache.org/install.html
 
 set -o errexit
+set -o nounset
 
 if [ "${USER:-}" != "root" ]; then
   echo "[ERROR] \"${0}\" must be run as root!"

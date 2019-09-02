@@ -26,6 +26,9 @@
 #
 # Cleans build artifacts from all maven projects in a folder
 
+set -o errexit
+set -o nounset
+
 if [ "${#}" == "0" ]; then
     ROOT="$(pwd)"
 elif [ "${#}" == "1" ]; then

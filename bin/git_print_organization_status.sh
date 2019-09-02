@@ -22,6 +22,9 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
+set -o errexit
+set -o nounset
+
 if [ "${#}" == "0" ]; then
     ROOT="$(pwd)"
 elif [ "${#}" == "1" ]; then

@@ -22,6 +22,9 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
+set -o errexit
+set -o nounset
+
 # Calculate the bash script library directory
 if [ -z "${__TMP_LIB_DIR:-}" ]; then
     __TMP_LIB_DIR="$(dirname "$(dirname "$(realpath.sh "${BASH_SOURCE[0]}")")")/bashlib"
@@ -54,7 +57,7 @@ else
 
         # only load the library if we haven't already loaded it,
         # to prevent infinite recursion loops if there's a circular dependency
-        if [ -z "${!__TMP_LOADED_ENV_VAR_NAME}" ]; then
+        if [ -z "${!__TMP_LOADED_ENV_VAR_NAME:-}" ]; then
 
             # set dynamically generated variable name
             eval export "${__TMP_LOADED_ENV_VAR_NAME}=true"

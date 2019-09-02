@@ -27,6 +27,8 @@
 #
 # If needed, makemv forum post for license key: https://www.makemkv.com/forum/viewtopic.php?f=5&t=1053
 
+set -o errexit
+set -o nounset
 
 if [ "${USER:-}" != "root" ]; then
   echo "[WARNING] \"${0}\" must be run as root!"

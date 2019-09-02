@@ -22,6 +22,9 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
+set -o errexit
+set -o nounset
+
 DELEGATE="git_print_organization_status.sh"
 
 if [ "${#}" == "0" ]; then

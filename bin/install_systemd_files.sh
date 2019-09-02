@@ -23,6 +23,7 @@
 #    SOFTWARE.
 
 set -o errexit
+set -o nounset
 
 if [ "${#}" == "0" ]; then
     FOLDER="$(pwd)"

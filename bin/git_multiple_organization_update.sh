@@ -22,6 +22,9 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
+set -o errexit
+set -o nounset
+
 # note that this script must be in the $PATH
 DELEGATE="git_organization_update.sh"
 
