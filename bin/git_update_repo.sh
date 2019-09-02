@@ -25,39 +25,69 @@
 set -o errexit
 set -o nounset
 
-# note that this script must be in the $PATH
-DELEGATE="git_organization_update.sh"
-
 if [ "${#}" == "0" ]; then
-    ROOT="$(pwd)"
+    FOLDER="$(pwd)"
 elif [ "${#}" == "1" ]; then
-    ROOT="${1}"
+    FOLDER="${1}"
 else
-    >&2 echo "Usage: ${0} [parent folder]"
-    >&2 echo "Runs \"${DELEGATE}\" on all subdirectories of [parent folder]."
-    >&2 echo "If [parent folder] is not provided, it defaults to the current working directory."
-    >&2 echo ""
-    >&2 echo "See the documentation for ${DELEGATE} for details"
+    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
     exit 1
 fi
 
 # load additional script function libraries
 # "load_script_library.sh" must be on the path
-. load_script_library.sh files
+. load_script_library.sh files git
 
-ROOT="$(abspath "${ROOT}")"
+FOLDER="$(abspath "${FOLDER}")"
 
-if [ ! -d "${ROOT}" ]; then
-    >&2 echo "[ERROR] \"${ROOT}\" is not a directory"
+if [ ! -d "${FOLDER}" ]; then
+    >&2 echo "Fatal: \"${FOLDER}\" is not a directory"
     exit 1
 fi
 
-for folder in "${ROOT}"/*; do
+cd "${FOLDER}" || exit 1
 
-    if [ ! -d "${folder}" ]; then
-        # skip non-directories
-        continue
+# skip non-repos
+if ! is_git_repo; then
+  printf '\e[33mIgnoring "\e[1m%s\e[0m\e[33m", not a git repository\e[0m\n' "$(basename "${FOLDER}")"
+  exit 0
+fi
+
+# get the branch name
+branch="$(parse_git_branch_name)"
+
+printf "Updating \"\e[1m%s\e[0m\" (branch: \"\e[1m%s\e[0m\")\n" "$(basename "${FOLDER}")" "${branch}"
+
+if ! local_git_changes_exist; then
+    printf '\e[34mRunning  "git pull"...  \e[0m'
+
+    if ! output=$(git pull 2>&1); then
+        printf '\e[31mFAILED:\e[0m\n'
+        echo "${output}"
+    else
+        printf '\e[32mdone!\e[0m\n'
     fi
+else
+    printf '\e[33mSkipping "git pull", \e[1muncommitted changes present\e[0m\n'
+fi
 
-    "${DELEGATE}" "${folder}"
-done
+printf '\e[34mRunning  "git fetch"... \e[0m'
+
+# always do a git fetch (even if the working copy is dirty) in order to prune dead remote branches
+if ! output=$(git fetch --prune 2>&1); then
+    printf '\e[31mFAILED:\e[0m\n'
+    echo "${output}"
+else
+    printf '\e[32mdone!\e[0m\n'
+fi
+
+printf '\e[34mRunning  "git gc"...    \e[0m'
+
+# always do a git gc in order to clean repos
+if ! output=$(git gc 2>&1); then
+    printf '\e[31mFAILED:\e[0m\n'
+    echo "${output}"
+else
+    printf '\e[32mdone!\e[0m\n'
+fi
+
