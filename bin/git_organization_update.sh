@@ -75,7 +75,7 @@ for folder in "${ROOT}"/*; do
 
     cd "${folder}" || exit 1
 
-    if [ "$(is_git_repo)" != "true" ]; then
+    if ! is_git_repo; then
         # skip non-repos
         continue
     fi
@@ -85,7 +85,7 @@ for folder in "${ROOT}"/*; do
 
     printf "Updating \"\e[1m%s\e[0m\" (branch: \"\e[1m%s\e[0m\")\n" "$(basename "${folder}")" "${branch}"
 
-    if [ "$(local_git_changes_exist)" == 'false' ]; then
+    if ! local_git_changes_exist; then
         printf '\e[34mRunning  "git pull"...  \e[0m'
 
         if ! output=$(git pull 2>&1); then

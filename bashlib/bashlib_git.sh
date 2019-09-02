@@ -30,22 +30,32 @@
 # "load_script_library.sh" must be on the path
 . load_script_library.sh files
 
+# Checks whether the current working directory is a git repository
+#
+# return : 0 if the directory is a git repo, 1 otherwise
 function is_git_repo() {
-    git status 2>/dev/null 1>&2
 
-    if [ "${?}" = "0" ]; then
-        echo "true"
-    else
-        echo "false"
+    # git status returns success if the folder is a git repo, failure otherwise.
+    # suppress all console output
+    if git status 2>/dev/null 1>&2; then
+      return 0
     fi
+
+    return 1
 }
 
+# Checks whether the git repo in the current working directory
+# contains any uncomitted changes. The response is undefined if
+# the current working directory is not a git repository.
+#
+# return : 0 if there are local changes, 1 if there are none
 function local_git_changes_exist() {
-    if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
-        echo 'false'
-    else
-        echo 'true'
+
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+        return 0
     fi
+
+    return 1
 }
 
 # prints the name of the active git branch for the current folder.
@@ -72,7 +82,8 @@ function list_git_remote_branch_name() {
 
 # https://stackoverflow.com/a/3278427
 function compare_local_git_branch_with_remote() {
-    UPSTREAM=${1:-'@{u}'}
+    DEFAULT='@{u}'
+    UPSTREAM="${1:-${DEFAULT}}"
     results=$(git -c color.ui=false --no-optional-locks status -s -b --ahead-behind --untracked-files=no -- "${UPSTREAM}" 2>/dev/null | grep --color=none -e '\[*\]' | sed -E 's/^[^[]*\[([^]]+)\]/\1/')
 
     if [ -z "${results}" ]; then

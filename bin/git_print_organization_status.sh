@@ -90,14 +90,14 @@ for folder in "${ROOT}"/*; do
 
     cd "${folder}" || exit 1
 
-    if [ "$(is_git_repo)" != "true" ]; then
+    if ! is_git_repo; then
         # skip non-repos
         continue
     fi
 
     COLUMN_1+=( "$(basename "${ROOT}")" )
     COLUMN_2+=( "$(basename "${folder}")" )
-    COLUMN_3+=( "$(if [ "$(local_git_changes_exist)" == "true" ]; then echo "exist"; else echo "none"; fi )" )
+    COLUMN_3+=( "$(if local_git_changes_exist; then echo "exist"; else echo "none"; fi )" )
     COLUMN_4+=( "$(parse_git_branch_name)" )
 
     remote="$(parse_git_remote_branch_name)"
