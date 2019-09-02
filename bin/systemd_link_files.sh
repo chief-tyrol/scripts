@@ -68,6 +68,7 @@ SUFFICES=(
   'target'
   'socket'
 )
+FILES=()
 
 for file in "${FOLDER}/"*; do
   file="$(abspath "${file}")"
@@ -93,7 +94,9 @@ for file in "${FOLDER}/"*; do
     continue
   fi
 
-  symlink="/etc/systemd/system/$(file_basename "${file}")"
+  unit_file="$(file_basename "${file}")"
+
+  symlink="/etc/systemd/system/${unit_file}"
 
   if [ -h "${symlink}" ]; then
     # if file already exists but is a symlink, silently remove it
@@ -108,7 +111,15 @@ for file in "${FOLDER}/"*; do
 
   ln -s "${file}" "${symlink}"
   echo "linked \"${symlink}\" -> \"${file}\""
+
+  FILES+=( "${unit_file}" )
 done
 
 # reload unit files
 systemctl daemon-reload
+
+echo "Installed the following files, be sure to run \"systemctl enable\" and/or \"systemctl start\" as needed:"
+
+for file in "${FILES[@]}"; do
+  echo "    ${file}"
+done
