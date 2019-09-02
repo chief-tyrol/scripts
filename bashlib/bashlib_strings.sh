@@ -35,3 +35,25 @@ function repeat_string() {
     count="${2}"
     printf '%*s' "${count}" | sed "s/ /${str}/g"
 }
+
+# Checks if a string contains another.
+#
+# $1     : string being checked
+# $2     : substring to check for
+# return : status code 0 if $1 contains $2, status code 1 otherwise
+#
+# Examples:
+#   str_contains "foo" "o"   # returns 0
+#   str_contains "foo" "foo" # returns 0
+#   str_contains "foo" "a"   # returns 1
+#   str_contains "foo" "bar" # returns 1
+#
+# https://stackoverflow.com/a/229606
+function str_contains() {
+
+  if [[ "${1}" == *"${2}"* ]]; then
+    return 0
+  fi
+
+  return 1
+}
