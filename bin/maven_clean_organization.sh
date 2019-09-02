@@ -22,43 +22,45 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-#
-#
-# Script library - string utilities
+# Runs "maven_clean_repo.sh" on all folders in a folder
 
-function strlen() {
-  echo "${#1}"
-}
+set -o errexit
+set -o nounset
 
-function repeat_string() {
-    str="${1}"
-    count="${2}"
+DELEGATE='maven_clean_repo.sh'
 
-    if [ "${count}" == "0" ]; then
-      return 0
+if [ "${#}" == "0" ]; then
+    FOLDER="$(pwd)"
+elif [ "${#}" == "1" ]; then
+    FOLDER="${1}"
+else
+    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
+    exit 1
+fi
+
+# load additional script function libraries
+# "load_script_library.sh" must be on the path
+. load_script_library.sh files strings
+
+FOLDER="$(abspath "${FOLDER}")"
+
+if [ ! -d "${FOLDER}" ]; then
+    >&2 echo "Fatal: \"${FOLDER}\" is not a directory"
+    exit 1
+fi
+
+name="$(file_basename "${FOLDER}")"
+
+printf "Cleaning Maven projects under \"\e[1m%s\e[0m\"...\n" "${FOLDER}"
+
+for folder in "${FOLDER}"/*; do
+
+    if [ ! -d "${folder}" ]; then
+        # not a folder, ignore
+        continue
     fi
 
-    printf '%*s' "${count}" | sed "s/ /${str}/g"
-}
+    INDENT="2" "${DELEGATE}" "${folder}"
+done
 
-# Checks if a string contains another.
-#
-# $1     : string being checked
-# $2     : substring to check for
-# return : status code 0 if $1 contains $2, status code 1 otherwise
-#
-# Examples:
-#   str_contains "foo" "o"   # returns 0
-#   str_contains "foo" "foo" # returns 0
-#   str_contains "foo" "a"   # returns 1
-#   str_contains "foo" "bar" # returns 1
-#
-# https://stackoverflow.com/a/229606
-function str_contains() {
-
-  if [[ "${1}" == *"${2}"* ]]; then
-    return 0
-  fi
-
-  return 1
-}
+printf 'Cleaned Maven projects under "%s"\n' "${name}"

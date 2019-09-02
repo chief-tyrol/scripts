@@ -22,43 +22,45 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-#
-#
-# Script library - string utilities
+# Runs "maven_clean_organization.sh" on all folders in a folder
 
-function strlen() {
-  echo "${#1}"
-}
+set -o errexit
+set -o nounset
 
-function repeat_string() {
-    str="${1}"
-    count="${2}"
+DELEGATE='maven_clean_organization.sh'
 
-    if [ "${count}" == "0" ]; then
-      return 0
-    fi
+if [ "${#}" == "0" ]; then
+    FOLDER="$(pwd)"
+elif [ "${#}" == "1" ]; then
+    FOLDER="${1}"
+else
+    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
+    exit 1
+fi
 
-    printf '%*s' "${count}" | sed "s/ /${str}/g"
-}
+# load additional script function libraries
+# "load_script_library.sh" must be on the path
+. load_script_library.sh files
 
-# Checks if a string contains another.
-#
-# $1     : string being checked
-# $2     : substring to check for
-# return : status code 0 if $1 contains $2, status code 1 otherwise
-#
-# Examples:
-#   str_contains "foo" "o"   # returns 0
-#   str_contains "foo" "foo" # returns 0
-#   str_contains "foo" "a"   # returns 1
-#   str_contains "foo" "bar" # returns 1
-#
-# https://stackoverflow.com/a/229606
-function str_contains() {
+FOLDER="$(abspath "${FOLDER}")"
 
-  if [[ "${1}" == *"${2}"* ]]; then
-    return 0
+if [ ! -d "${FOLDER}" ]; then
+    >&2 echo "[ERROR] \"${FOLDER}\" is not a directory"
+    exit 1
+fi
+
+iter=0
+for file in "${FOLDER}/"*; do
+
+  if [ ! -d "${file}" ]; then
+    continue
   fi
 
-  return 1
-}
+  if [ "${iter}" -gt 0 ]; then
+    echo ''
+  fi
+
+  "${DELEGATE}" "${file}"
+
+  iter=$((iter + 1))
+done

@@ -22,20 +22,17 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-#
-#
-# Cleans build artifacts from all maven projects in a folder
+# Cleans build artifacts from a Maven project
 
 set -o errexit
 set -o nounset
 
 if [ "${#}" == "0" ]; then
-    ROOT="$(pwd)"
+    FOLDER="$(pwd)"
 elif [ "${#}" == "1" ]; then
-    ROOT="${1}"
+    FOLDER="${1}"
 else
-    >&2 echo "Usage: $0 [folder]"
-    >&2 echo "Runs \`mvn clean\` in subfolders of [folder], or the current working directory if [folder] is not provided"
+    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
     exit 1
 fi
 
@@ -43,10 +40,10 @@ fi
 # "load_script_library.sh" must be on the path
 . load_script_library.sh files
 
-ROOT="$(abspath "${ROOT}")"
+FOLDER="$(abspath "${FOLDER}")"
 
-if [ ! -d "${ROOT}" ]; then
-    >&2 echo "[ERROR] \"${ROOT}\" is not a directory"
+if [ ! -d "${FOLDER}" ]; then
+    >&2 echo "[ERROR] \"${FOLDER}\" is not a directory"
     exit 1
 fi
 
@@ -60,35 +57,33 @@ _OTHER_MAVEN_FILES=(
     release.properties
 )
 
-ORIGINAL_DIR="$(pwd)"
-echo "[INFO] Cleaning projects in \"${ROOT}\""
+INDENT_STR="$(repeat_string " " "${INDENT:-0}")"
 
-for folder in "${ROOT}"/*; do
+cd "${FOLDER}" || exit 1
 
-    if [ ! -d "${folder}" ]; then
-        # not a folder, ignore
-        continue
+# skip non-maven folders
+if [ ! -e 'pom.xml' ]; then
+  exit 0
+fi
+
+name="$(file_basename "${FOLDER}")"
+
+printf '%s\e[34;1mCleaning \e[39m"%s"\e[34m...\e[0m ' "${INDENT_STR}" "${name}"
+
+# run the actual maven clean
+if ! mvn clean >/dev/null 2>&1; then
+  printf '\e[31;1mFAILURE\e[0m:\n'
+  printf '"mvn clean" failed\n'
+  exit 1
+fi
+
+# clear out any other cruft maven files that may have accumulated
+for file in "${_OTHER_MAVEN_FILES[@]}"; do
+    if ! find . -name "${file}" -delete; then
+      printf '\e[31;1mFAILURE\e[0m:\n'
+      printf '%sThe "find" command failed while attempting to delete "%s"\n' "${INDENT_STR}" "${file}"
+      exit 1
     fi
-
-    cd "${folder}" || exit 1
-
-    if [ ! -f 'pom.xml' ]; then
-        # not a maven project, ignore
-        continue
-    fi
-
-    echo -n "[INFO]   Cleaning ${folder}..."
-
-    # run the actual maven clean
-    mvn clean >/dev/null 2>&1
-
-    # clear out any other cruft maven files that may have accumulated
-    for file in "${_OTHER_MAVEN_FILES[@]}"; do
-        find . -name "${file}" -delete
-    done
-
-    echo " done!"
 done
 
-cd "${ORIGINAL_DIR}" || exit 1
-echo "[INFO] Cleaned projects in \"${ROOT}\""
+printf '\e[32;1msuccess!\e[0m\n'
