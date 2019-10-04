@@ -92,6 +92,8 @@ echo "Maven ${VERSION} successfully installed into ${MAVEN_INSTALL_FOLDER}"
 if command -v update-alternatives > /dev/null 2>&1; then
   echo "update-alternatives available, using it to create symlinks in $(dirname "${MVN_EXEC}")"
 
+  update-alternatives --remove-all mvn
+
   update-alternatives --install "${MVN_EXEC}"      mvn      "${MVN_BINARY}"      10000 \
                       --slave   "${MVNDEBUG_EXEC}" mvnDebug "${MVNDEBUG_BINARY}"
 
