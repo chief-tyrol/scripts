@@ -54,6 +54,7 @@ _OTHER_MAVEN_FILES=(
     pom.xml.versionsBackup
     pom.xml.next
     dependency-reduced-pom.xml
+    dependency-reduced-pom.xml.bak
     release.properties
 )
 
