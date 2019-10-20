@@ -24,12 +24,17 @@
 
 # Restarts the audio daemon on a mac, which will usually fix audio issues
 
+set -o errexit
+set -o nounset
+
 PROCESS='coreaudiod'
+COMMAND="/usr/sbin/${PROCESS}"
 
-AUDIO_PID="$(ps -ef | grep "/usr/sbin/${PROCESS}" | grep -v grep | awk '{print $2}' | tr -d '[:space:]')​"
+# TODO refactor to use pgrep
+AUDIO_PID="$(ps -ef | grep "${COMMAND}" | grep -v grep | awk '{print $2}' | tr -c -d '0123456789')"
 
-if [ -z "${AUDIO_PID}" ] || [ '' = "${AUDIO_PID}" ]; then
-  echo "FATAL: unable to determine pid for ${PROCESS}"
+if [ -z "${AUDIO_PID}" ]; then
+  >&2 echo "FATAL: unable to determine pid for ${PROCESS}"
   exit 1
 fi
 

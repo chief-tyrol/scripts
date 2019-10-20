@@ -22,15 +22,14 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Runs updates
+# Runs updates for a system using the `apt` package manager
 
 set -o errexit
 set -o nounset
 
 if [ "${USER:-}" != "root" ]; then
-  echo "[WARNING] \"${0}\" must be run as root!"
-  echo ""
-  exec sudo "${0}"
+  echo "[WARNING] \"${BASH_SOURCE[0]}\" must be run as root!"
+  exec sudo "${BASH_SOURCE[0]}"
 fi
 
 function print_seperator() {
@@ -60,5 +59,3 @@ print_seperator
 apt autoremove -y
 apt autoclean -y
 apt clean -y
-echo ""
-echo ""

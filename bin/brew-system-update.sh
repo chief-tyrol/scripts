@@ -22,7 +22,7 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Updates packages managed by Homebrew
+# Runs updates for a system using the `brew` package manager
 # https://brew.sh/
 
 set -o errexit

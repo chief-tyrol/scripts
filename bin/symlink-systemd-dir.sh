@@ -22,7 +22,7 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Script for linking all Systemd configuration files in a folder into Systemd
+# Links all Systemd files from a given directory into Systemd
 
 set -o errexit
 set -o nounset

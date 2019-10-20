@@ -22,7 +22,8 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# script based on https://stackoverflow.com/a/1116890
+#
+# Script based on https://stackoverflow.com/a/1116890
 
 set -o errexit
 set -o nounset
@@ -30,8 +31,9 @@ set -o nounset
 TARGET_FILE="${1:-}"
 
 if [[ -z "${TARGET_FILE}" || "${TARGET_FILE}" == "-h" || "${TARGET_FILE}" == "--help" ]]; then
-  >&2 echo "Usage: ${0:-realpath.sh} FILE"
-  >&2 echo "Recursively resolves FILE, equivalent behavior to \`readlink -f FILE\`, but compatible with BSD based systems"
+  >&2 echo "Usage: ${BASH_SOURCE[0]} file"
+  >&2 echo ""
+  >&2 echo "BSD compatible equivalent to \`readlink -f\` (e.g. for use on OSX)."
   exit 1
 fi
 
