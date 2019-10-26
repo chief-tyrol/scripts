@@ -28,10 +28,25 @@
 set -o errexit
 set -o nounset
 
-if [ "${USER:-}" != "root" ]; then
-  echo "[ERROR] \"${0}\" must be run as root!"
-  exit 1
+DEAULT_VERSION='3.6.2'
+
+if [ "${EUID:-1}" != '0' ]; then
+  exec sudo -p "\`$(basename "${BASH_SOURCE[0]}")\` requires %U access, please enter password: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
 fi
+
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
+
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [version]
+
+Installs the specified version of Maven, or Maven ${DEAULT_VERSION} if no version is specified
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
 
 function delete_if_exists() {
   file="${1}"
@@ -43,18 +58,12 @@ function delete_if_exists() {
   fi
 }
 
-DEAULT_VERSION='3.6.1'
-VERSION=''
-
-if [ "${#}" == "0" ]; then
-    VERSION="${DEAULT_VERSION}"
-elif [ "${#}" == "1" ]; then
-    VERSION="${1}"
-else
-    >&2 echo "Usage: $0 [version]"
-    >&2 echo "Installs the specified version of Maven. Defaults to ${DEAULT_VERSION} if no version is specified"
-    exit 1
-fi
+# parse input
+case "${#}" in
+  0) VERSION="${DEAULT_VERSION}" ;;
+  1) VERSION="${1}"              ;;
+  *) usage                       ;;
+esac
 
 MIRROR=http://www.apache.org/dist
 

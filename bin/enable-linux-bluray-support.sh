@@ -22,45 +22,41 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Runs "maven_clean_repo.sh" on all folders in a folder
+
+# Script for adding bluray support to VLC on linux, based on https://askubuntu.com/a/579156
+#
+# If needed, makemv forum post for license key: https://www.makemkv.com/forum/viewtopic.php?f=5&t=1053
 
 set -o errexit
 set -o nounset
 
-DELEGATE='maven_clean_repo.sh'
-
-if [ "${#}" == "0" ]; then
-    FOLDER="$(pwd)"
-elif [ "${#}" == "1" ]; then
-    FOLDER="${1}"
-else
-    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
-    exit 1
+if [ "${EUID:-1}" != '0' ]; then
+  exec sudo -p "\`$(basename "${BASH_SOURCE[0]}")\` requires %U access, please enter password: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
 fi
 
-# load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files strings
+# remove open source libraries, since they conflict
+apt remove -y libaacs0 libbdplus0
 
-FOLDER="$(abspath "${FOLDER}")"
+# Add PPA
+add-apt-repository -y ppa:heyarje/makemkv-beta
+apt update
 
-if [ ! -d "${FOLDER}" ]; then
-    >&2 echo "Fatal: \"${FOLDER}\" is not a directory"
-    exit 1
+# install closed-source codecs
+apt install -y makemkv-bin makemkv-oss
+
+# update search index
+updatedb
+
+# locate installed DLL
+cd "$(dirname "$(locate libmmbd.so.0 | head -n 1)")" || exit 1
+
+# create symlinks for VLC to use
+if [ ! -f "libaacs.so.0" ]; then
+    ln -s libmmbd.so.0 libaacs.so.0
 fi
 
-name="$(file_basename "${FOLDER}")"
+if [ ! -f "libbdplus.so.0" ]; then
+    ln -s libmmbd.so.0 libbdplus.so.0
+fi
 
-printf "Cleaning Maven projects under \"\e[1m%s\e[0m\"...\n" "${FOLDER}"
-
-for folder in "${FOLDER}"/*; do
-
-    if [ ! -d "${folder}" ]; then
-        # not a folder, ignore
-        continue
-    fi
-
-    INDENT="2" "${DELEGATE}" "${folder}"
-done
-
-printf 'Cleaned Maven projects under "%s"\n' "${name}"
+{ set +x; } 2> /dev/null

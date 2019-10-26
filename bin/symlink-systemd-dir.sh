@@ -27,35 +27,45 @@
 set -o errexit
 set -o nounset
 
-if [ "${#}" == "0" ]; then
-    FOLDER="$(pwd)"
-elif [ "${#}" == "1" ]; then
-    FOLDER="${1}"
-else
-    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
-    >&2 echo "Symlinks all Systemd files in \"folder\" into /etc/systemd/system"
-    >&2 echo "If \"folder\" is omitted, the current working directory is used"
-    exit 1
+if [ "${EUID:-1}" != '0' ]; then
+  exec sudo -p "\`$(basename "${BASH_SOURCE[0]}")\` requires %U access, please enter password: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
 fi
 
-if [ "$(whoami)" != "root" ]; then
-  echo "[WARNING] \"${BASH_SOURCE[0]}\" must be run as root!"
-  echo ""
-  exec sudo PATH="${PATH}" "${BASH_SOURCE[0]}" "${FOLDER}"
-fi
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
+
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [folder]
+
+Symlinks all Systemd files in "folder" into /etc/systemd/system
+
+If "folder" is omitted, the current working directory is used
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
+
+# parse input
+case "${#}" in
+  0) FOLDER="$(pwd)" ;;
+  1) FOLDER="${1}"   ;;
+  *) usage           ;;
+esac
 
 # load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files
+# "load-bash-library.sh" must be on the path
+. load-bash-library.sh files
 
 FOLDER="$(abspath "${FOLDER}")"
 
 if [ ! -d "${FOLDER}" ]; then
-  echo "Fatal: \"${FOLDER}\" is not a directory"
-  exit 1
+  echo "Fatal: \"${FOLDER}\" is not a directory" >&2
+  usage
 fi
 
-# list of value file suffixes to use
+# every suffix a value systemd file can have
 SUFFICES=(
   'service'
   'device'
@@ -104,8 +114,8 @@ for file in "${FOLDER}/"*; do
   fi
 
   if [ -e "${symlink}" ]; then
-    echo "Fatal: file \"${symlink}\" already exists and is not a symlink:"
-    ls -lah "${symlink}"
+    echo "Fatal: file \"${symlink}\" already exists and is not a symlink:" >&2
+    ls -lah "${symlink}" >&2
     exit 1
   fi
 

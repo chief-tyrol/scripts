@@ -25,18 +25,29 @@
 set -o errexit
 set -o nounset
 
-if [ "${#}" == "0" ]; then
-    FOLDER="$(pwd)"
-elif [ "${#}" == "1" ]; then
-    FOLDER="${1}"
-else
-    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
-    exit 1
-fi
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
 
-# load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files git
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [folder]
+
+TODO documentation
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
+
+# parse input
+case "${#}" in
+  0) FOLDER="$(pwd)" ;;
+  1) FOLDER="${1}"   ;;
+  *) usage           ;;
+esac
+
+# load additional functions (`load-bash-library.sh` must be on the PATH)
+. load-bash-library.sh files git
 
 FOLDER="$(abspath "${FOLDER}")"
 

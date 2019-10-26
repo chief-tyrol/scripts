@@ -28,13 +28,24 @@
 set -o errexit
 set -o nounset
 
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
+
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} file
+
+BSD compatible equivalent to \`readlink -f\` (e.g. for use on OSX).
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
+
 TARGET_FILE="${1:-}"
 
 if [[ -z "${TARGET_FILE}" || "${TARGET_FILE}" == "-h" || "${TARGET_FILE}" == "--help" ]]; then
-  >&2 echo "Usage: ${BASH_SOURCE[0]} file"
-  >&2 echo ""
-  >&2 echo "BSD compatible equivalent to \`readlink -f\` (e.g. for use on OSX)."
-  exit 1
+  usage
 fi
 
 cd "$(dirname "${TARGET_FILE}")" || exit 1

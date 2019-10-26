@@ -27,8 +27,8 @@
 # Script library - Git utilities
 
 # load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files
+# "load-bash-library.sh" must be on the path
+. load-bash-library.sh files
 
 # Checks whether the current working directory is a git repository
 #

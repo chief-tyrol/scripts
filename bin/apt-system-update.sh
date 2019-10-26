@@ -27,9 +27,8 @@
 set -o errexit
 set -o nounset
 
-if [ "${USER:-}" != "root" ]; then
-  echo "[WARNING] \"${BASH_SOURCE[0]}\" must be run as root!"
-  exec sudo "${BASH_SOURCE[0]}"
+if [ "${EUID:-1}" != '0' ]; then
+  exec sudo -p "\`$(basename "${BASH_SOURCE[0]}")\` requires %U access, please enter password: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
 fi
 
 function print_seperator() {

@@ -31,28 +31,35 @@
 set -o errexit
 set -o nounset
 
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
+
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [folder]
+Changes the quality of jpg images in [folder] to 90, or the current working directory if [folder] is not provided
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
+
+# parse input
+case "${#}" in
+  0) FOLDER="$(pwd)" ;;
+  1) FOLDER="${1}"   ;;
+  *) usage           ;;
+esac
+
 # precondition to running the script
 if ! command -v convert > /dev/null 2>&1; then
   >&2 echo "[FATAL] Unable to find imagemagick on the path"
-  >&2 echo "[FATAL] Please run 'sudo apt install -y imagemagick' first"
+  >&2 echo "[FATAL] Please run 'apt install -y imagemagick' first"
   exit 1
 fi
 
-FOLDER=''
-
-if [ "${#}" == "0" ]; then
-    FOLDER="$(pwd)"
-elif [ "${#}" == "1" ]; then
-    FOLDER="${1}"
-else
-    >&2 echo "Usage: $0 [folder]"
-    >&2 echo "Changes the quality of jpg images in [folder] to 90, or the current working directory if [folder] is not provided"
-    exit 1
-fi
-
-# load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files
+# load additional functions (`load-bash-library.sh` must be on the PATH)
+. load-bash-library.sh files
 
 # get the full, real path
 FOLDER="$(abspath "$(realpath.sh "${FOLDER}")" )"

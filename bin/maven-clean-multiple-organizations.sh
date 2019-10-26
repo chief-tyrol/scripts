@@ -25,34 +25,29 @@
 set -o errexit
 set -o nounset
 
-# note that this script must be in the $PATH
-DELEGATE='git_update_organization.sh'
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
 
-if [ "${#}" == "0" ]; then
-    FOLDER="$(pwd)"
-elif [ "${#}" == "1" ]; then
-    FOLDER="${1}"
-else
-    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
-    exit 1
-fi
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [folder]
 
-#if [ "${#}" == "0" ]; then
-#    FOLDER="$(pwd)"
-#elif [ "${#}" == "1" ]; then
-#    FOLDER="${1}"
-#else
-#    >&2 echo "Usage: ${0} [parent folder]"
-#    >&2 echo "Runs \"${DELEGATE}\" on all subdirectories of [parent folder]."
-#    >&2 echo "If [parent folder] is not provided, it defaults to the current working directory."
-#    >&2 echo ""
-#    >&2 echo "See the documentation for ${DELEGATE} for details"
-#    exit 1
-#fi
+TODO documentation
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
 
-# load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files
+# parse input
+case "${#}" in
+  0) FOLDER="$(pwd)" ;;
+  1) FOLDER="${1}"   ;;
+  *) usage           ;;
+esac
+
+# load additional functions (`load-bash-library.sh` must be on the PATH)
+. load-bash-library.sh files
 
 FOLDER="$(abspath "${FOLDER}")"
 
@@ -61,12 +56,18 @@ if [ ! -d "${FOLDER}" ]; then
     exit 1
 fi
 
-for folder in "${FOLDER}"/*; do
+iter=0
+for file in "${FOLDER}/"*; do
 
-    if [ ! -d "${folder}" ]; then
-        # skip non-directories
-        continue
-    fi
+  if [ ! -d "${file}" ]; then
+    continue
+  fi
 
-    "${DELEGATE}" "${folder}"
+  if [ "${iter}" -gt 0 ]; then
+    echo ''
+  fi
+
+  maven-clean-organization.sh "${file}"
+
+  iter=$((iter + 1))
 done

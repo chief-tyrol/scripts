@@ -22,44 +22,57 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-
-# Script for adding bluray support to VLC on linux, based on https://askubuntu.com/a/579156
-#
-# If needed, makemv forum post for license key: https://www.makemkv.com/forum/viewtopic.php?f=5&t=1053
-
 set -o errexit
 set -o nounset
 
-if [ "${USER:-}" != "root" ]; then
-  echo "[WARNING] \"${0}\" must be run as root!"
-  exec sudo "${0}"
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
+
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [folder]
+
+TODO documentation
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
+
+# parse input
+case "${#}" in
+  0) FOLDER="$(pwd)" ;;
+  1) FOLDER="${1}"   ;;
+  *) usage           ;;
+esac
+
+
+# load additional functions (`load-bash-library.sh` must be on the PATH)
+. load-bash-library.sh files git
+
+function print_seperator() {
+    echo '----------------------------------------'
+}
+
+FOLDER="$(abspath "${FOLDER}")"
+
+if [ ! -d "${FOLDER}" ]; then
+    >&2 echo "[ERROR] \"${FOLDER}\" is not a directory"
+    exit 1
 fi
 
-set -x
+print_seperator
+printf 'Updating git repos under \"\e[1m%s\e[0m\"\n' "${FOLDER}"
+print_seperator
 
-# remove open source libraries, since they conflict
-apt remove -y libaacs0 libbdplus0
+for folder in "${FOLDER}"/*; do
 
-# Add PPA
-add-apt-repository -y ppa:heyarje/makemkv-beta
-apt update
+    if [ ! -d "${folder}" ]; then
+        # skip non-folders
+        continue
+    fi
 
-# install closed-source codecs
-apt install -y makemkv-bin makemkv-oss
+    git-update-repo.sh "${folder}"
 
-# update search index
-updatedb
-
-# locate installed DLL
-cd "$(dirname "$(locate libmmbd.so.0 | head -n 1)")" || exit 1
-
-# create symlinks for VLC to use
-if [ ! -f "libaacs.so.0" ]; then
-    ln -s libmmbd.so.0 libaacs.so.0
-fi
-
-if [ ! -f "libbdplus.so.0" ]; then
-    ln -s libmmbd.so.0 libbdplus.so.0
-fi
-
-{ set +x; } 2> /dev/null
+    print_seperator
+done

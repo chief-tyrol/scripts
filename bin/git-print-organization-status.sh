@@ -25,40 +25,38 @@
 set -o errexit
 set -o nounset
 
-if [ "${#}" == "0" ]; then
-    ROOT="$(pwd)"
-elif [ "${#}" == "1" ]; then
-    ROOT="${1}"
-else
-    >&2 echo "Usage: ${0} [parent folder]"
-    >&2 echo "Update all git repositories which are subdirectories of [parent folder]."
-    >&2 echo "If [parent folder] is not provided, it defaults to the current working directory."
-    >&2 echo ""
-    >&2 echo "An \"update\" is defined running a \"git pull\", \"git fetch --prune\", and \"git gc\"."
-    >&2 echo ""
-    >&2 echo "e.g, if your git folder layout looked like:"
-    >&2 echo ""
-    >&2 echo "  git"
-    >&2 echo "   \-organization"
-    >&2 echo "     \-repo1"
-    >&2 echo "     \-repo2"
-    >&2 echo ""
-    >&2 echo "then you could run ${0} \"git/organization\" to update both repos"
-    exit 1
-fi
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
+
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [folder]
+
+TODO documentation
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
+
+# parse input
+case "${#}" in
+  0) FOLDER="$(pwd)" ;;
+  1) FOLDER="${1}"   ;;
+  *) usage           ;;
+esac
 
 function seperator() {
     echo "----------------------------------------"
 }
 
-# load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files git math strings
+# load additional functions (`load-bash-library.sh` must be on the PATH)
+. load-bash-library.sh files git math strings
 
-ROOT="$(abspath "${ROOT}")"
+FOLDER="$(abspath "${FOLDER}")"
 
-if [ ! -d "${ROOT}" ]; then
-    echo "[ERROR] \"${ROOT}\" is not a directory"
+if [ ! -d "${FOLDER}" ]; then
+    echo "[ERROR] \"${FOLDER}\" is not a directory"
     exit 1
 fi
 
@@ -81,7 +79,7 @@ COLUMN_4_STRLEN='0'
 COLUMN_5_STRLEN='0'
 COLUMN_6_STRLEN='0'
 
-for folder in "${ROOT}"/*; do
+for folder in "${FOLDER}"/*; do
 
     if [ ! -d "${folder}" ]; then
         # skip non-folders
@@ -95,7 +93,7 @@ for folder in "${ROOT}"/*; do
         continue
     fi
 
-    COLUMN_1+=( "$(basename "${ROOT}")" )
+    COLUMN_1+=( "$(basename "${FOLDER}")" )
     COLUMN_2+=( "$(basename "${folder}")" )
     COLUMN_3+=( "$(if local_git_changes_exist; then echo "exist"; else echo "none"; fi )" )
     COLUMN_4+=( "$(parse_git_branch_name)" )

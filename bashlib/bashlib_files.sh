@@ -25,8 +25,8 @@
 # Script library - Bash utilities for working with files
 
 # load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh strings
+# "load-bash-library.sh" must be on the path
+. load-bash-library.sh strings
 
 # generate absolute path from relative path
 # $1     : relative filename
@@ -36,11 +36,11 @@
 function abspath() {
     if [ -d "${1}" ]; then
         # dir
-        (cd "${1}"; pwd)
+        (cd "${1}" || exit 1; pwd)
     elif [ -f "${1}" ]; then
         # file
         if [[ $1 == */* ]]; then
-            echo "$(cd "${1%/*}"; pwd)/${1##*/}"
+            echo "$(cd "${1%/*}" || exit 1; pwd)/${1##*/}"
         else
             echo "$(pwd)/$1"
         fi

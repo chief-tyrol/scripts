@@ -22,9 +22,6 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-set -o errexit
-set -o nounset
-
 # Calculate the bash script library directory
 if [ -z "${__TMP_LIB_DIR:-}" ]; then
     __TMP_LIB_DIR="$(dirname "$(dirname "$(realpath.sh "${BASH_SOURCE[0]}")")")/bashlib"

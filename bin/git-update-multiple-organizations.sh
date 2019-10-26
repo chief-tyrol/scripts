@@ -22,25 +22,32 @@
 #    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #    SOFTWARE.
 
-# Runs "maven_clean_organization.sh" on all folders in a folder
-
 set -o errexit
 set -o nounset
 
-DELEGATE='maven_clean_organization.sh'
+function usage() {
+  local -r name="$(basename "${BASH_SOURCE[0]}")"
 
-if [ "${#}" == "0" ]; then
-    FOLDER="$(pwd)"
-elif [ "${#}" == "1" ]; then
-    FOLDER="${1}"
-else
-    >&2 echo "Usage: ${BASH_SOURCE[0]} [folder]"
-    exit 1
-fi
+  # abuse command substitution to assign heredoc to a variable
+  docstring=$(cat <<-EOF
+Usage: ${name} [folder]
 
-# load additional script function libraries
-# "load_script_library.sh" must be on the path
-. load_script_library.sh files
+TODO documentation
+EOF
+)
+  # use `&& false` to ensure return code is `1`
+  printf '%s\n' "${docstring}" >&2 && false
+}
+
+# parse input
+case "${#}" in
+  0) FOLDER="$(pwd)" ;;
+  1) FOLDER="${1}"   ;;
+  *) usage           ;;
+esac
+
+# load additional bash functions (`load-bash-library.sh` must be on the PATH)
+. load-bash-library.sh files
 
 FOLDER="$(abspath "${FOLDER}")"
 
@@ -49,18 +56,12 @@ if [ ! -d "${FOLDER}" ]; then
     exit 1
 fi
 
-iter=0
-for file in "${FOLDER}/"*; do
+for folder in "${FOLDER}"/*; do
 
-  if [ ! -d "${file}" ]; then
-    continue
-  fi
+    if [ ! -d "${folder}" ]; then
+        # skip non-directories
+        continue
+    fi
 
-  if [ "${iter}" -gt 0 ]; then
-    echo ''
-  fi
-
-  "${DELEGATE}" "${file}"
-
-  iter=$((iter + 1))
+    git-update-organization.sh "${folder}"
 done
