@@ -47,7 +47,7 @@ case "${#}" in
 esac
 
 # load additional functions (`load-bash-library.sh` must be on the PATH)
-. load-bash-library.sh files
+. load-bash-library.sh files logging
 
 FOLDER="$(abspath "${FOLDER}")"
 

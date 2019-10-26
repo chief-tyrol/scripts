@@ -31,29 +31,32 @@ if [ "${EUID:-1}" != '0' ]; then
   exec sudo -p "\`$(basename "${BASH_SOURCE[0]}")\` requires %U access, please enter password: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
 fi
 
+# load additional functions (`load-bash-library.sh` must be on the PATH)
+. load-bash-library.sh logging
+
 function print_seperator() {
     echo "----------------------------------------"
 }
 
-echo "Updating apt package index..."
+log.info "Updating apt package index..."
 print_seperator
 apt update
 echo ""
 echo ""
 
-echo "Upgrading apt packages..."
+log.info "Upgrading apt packages..."
 print_seperator
 apt upgrade -y
 echo ""
 echo ""
 
-echo "Performing distribution upgrade of apt packages..."
+log.info "Performing distribution upgrade of apt packages..."
 print_seperator
 apt dist-upgrade -y
 echo ""
 echo ""
 
-echo "Cleaning apt cache"
+log.info "Cleaning apt cache"
 print_seperator
 apt autoremove -y
 apt autoclean -y
