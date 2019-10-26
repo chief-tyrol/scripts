@@ -22,8 +22,7 @@
   ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   ~ SOFTWARE.
   -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -33,15 +32,10 @@
     </parent>
 
     <groupId>zone.gryphon.ignore</groupId>
-    <artifactId>scripts-private</artifactId>
+    <artifactId>scripts</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
-    <name>${project.artifactId}</name>
-    <description>This is not a real Maven project, the POM is just included so that Intellij will automatically
-        pick up the git project and allow it to be imported into the project pane, without needing
-        to jump through hoops.
-
-        The Maven POM file should be ignored.</description>
+    <description>This isn't a real Maven project, the POM is just included so Intellij can import it.</description>
 </project>
