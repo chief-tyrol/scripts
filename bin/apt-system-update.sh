@@ -61,3 +61,11 @@ print_seperator
 apt autoremove -y
 apt autoclean -y
 apt clean -y
+
+if [ "${#}" = "1" ] && [ "${1}" = "reboot" ]; then
+  echo ""
+  echo ""
+  log.info "Rebooting system"
+  print_seperator
+  exec systemctl reboot
+fi
