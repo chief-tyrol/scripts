@@ -85,7 +85,7 @@ fi
 printf '\e[34mRunning  "git fetch"... \e[0m'
 
 # always do a git fetch (even if the working copy is dirty) in order to prune dead remote branches
-if ! output=$(git fetch --prune 2>&1); then
+if ! output=$(git fetch --all --prune --prune-tags 2>&1); then
     printf '\e[31mFAILED:\e[0m\n'
     echo "${output}"
 else
