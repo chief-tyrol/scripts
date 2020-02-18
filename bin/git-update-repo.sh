@@ -82,9 +82,9 @@ else
     printf '\e[33mSkipping "git pull", \e[1muncommitted changes present\e[0m\n'
 fi
 
-printf '\e[34mRunning  "git fetch"... \e[0m'
 
 # always do a git fetch (even if the working copy is dirty) in order to prune dead remote branches
+printf '\e[34mRunning  "git fetch"... \e[0m'
 if ! output=$(git fetch --all --prune --prune-tags 2>&1); then
     printf '\e[31mFAILED:\e[0m\n'
     echo "${output}"
@@ -92,9 +92,19 @@ else
     printf '\e[32mdone!\e[0m\n'
 fi
 
-printf '\e[34mRunning  "git gc"...    \e[0m'
+
+# force a git prune to cleanup cruft (usually a `git gc` will do this, however there are corner cases)
+printf '\e[34mRunning  "git prune"... \e[0m'
+if ! output=$(git prune 2>&1); then
+    printf '\e[31mFAILED:\e[0m\n'
+    echo "${output}"
+else
+    printf '\e[32mdone!\e[0m\n'
+fi
+
 
 # always do a git gc in order to clean repos
+printf '\e[34mRunning  "git gc"...    \e[0m'
 if ! output=$(git gc 2>&1); then
     printf '\e[31mFAILED:\e[0m\n'
     echo "${output}"
