@@ -28,7 +28,7 @@
 set -o errexit
 set -o nounset
 
-DEAULT_VERSION='3.6.2'
+DEAULT_VERSION='3.6.3'
 
 if [ "${EUID:-1}" != '0' ]; then
   exec sudo -p "\`$(basename "${BASH_SOURCE[0]}")\` requires %U access, please enter password: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
@@ -80,7 +80,7 @@ MVNDEBUG_BINARY="${MAVEN_INSTALL_FOLDER}/bin/mvnDebug"
 
 delete_if_exists "${DOWNLOAD_FILE}"
 
-curl -sS --fail "${MIRROR}/maven/maven-3/${VERSION}/binaries/apache-maven-${VERSION}-bin.tar.gz" -o "${DOWNLOAD_FILE}"
+curl -sS -L --fail "${MIRROR}/maven/maven-3/${VERSION}/binaries/apache-maven-${VERSION}-bin.tar.gz" -o "${DOWNLOAD_FILE}"
 
 tar -xf "${DOWNLOAD_FILE}" --directory /tmp
 rm -rf "${DOWNLOAD_FILE}"
@@ -101,7 +101,7 @@ echo "Maven ${VERSION} successfully installed into ${MAVEN_INSTALL_FOLDER}"
 if command -v update-alternatives > /dev/null 2>&1; then
   echo "update-alternatives available, using it to create symlinks in $(dirname "${MVN_EXEC}")"
 
-  update-alternatives --remove-all mvn
+  update-alternatives --remove-all mvn || true
 
   update-alternatives --install "${MVN_EXEC}"      mvn      "${MVN_BINARY}"      10000 \
                       --slave   "${MVNDEBUG_EXEC}" mvnDebug "${MVNDEBUG_BINARY}"

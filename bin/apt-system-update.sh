@@ -28,7 +28,7 @@ set -o errexit
 set -o nounset
 
 if [ "${EUID:-1}" != '0' ]; then
-  exec sudo -p "\`$(basename "${BASH_SOURCE[0]}")\` requires %U access, please enter password: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
+  exec sudo -p "[sudo] %U access required for \`$(basename "${BASH_SOURCE[0]}")\`, enter password for %p: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"
 fi
 
 # load additional functions (`load-bash-library.sh` must be on the PATH)
