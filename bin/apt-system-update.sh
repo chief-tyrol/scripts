@@ -26,6 +26,7 @@
 
 set -o errexit
 set -o nounset
+set -o pipefail
 
 if [ "${EUID:-1}" != '0' ]; then
   exec sudo -p "[sudo] %U access required for \`$(basename "${BASH_SOURCE[0]}")\`, enter password for %p: " PATH="${PATH}" -s "${BASH_SOURCE[0]}" "${@}"

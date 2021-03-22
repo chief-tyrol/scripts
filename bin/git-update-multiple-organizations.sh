@@ -24,6 +24,7 @@
 
 set -o errexit
 set -o nounset
+set -o pipefail
 
 function usage() {
   local -r name="$(basename "${BASH_SOURCE[0]}")"

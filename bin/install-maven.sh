@@ -27,6 +27,7 @@
 
 set -o errexit
 set -o nounset
+set -o pipefail
 
 DEAULT_VERSION='3.6.3'
 

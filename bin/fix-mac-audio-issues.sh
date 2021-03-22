@@ -26,6 +26,7 @@
 
 set -o errexit
 set -o nounset
+set -o pipefail
 
 PROCESS='coreaudiod'
 COMMAND="/usr/sbin/${PROCESS}"
