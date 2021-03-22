@@ -65,6 +65,13 @@ if ! is_git_repo; then
   exit 0
 fi
 
+# handle differences in BSD/GNU xargs implementation
+if [ -n "$(uname -a | grep -i darwin)" ]; then
+  XARG_ARG=''
+else
+  XARG_ARG='--no-run-if-empty'
+fi
+
 # get the branch name
 branch="$(parse_git_branch_name)"
 
@@ -93,6 +100,15 @@ else
     printf '\e[32mdone!\e[0m\n'
 fi
 
+# deletes all local branches which are set up to track a remote branch,
+# where the remote branch has been deleted.
+printf '\e[34mRunning  git cleanup... \e[0m'
+if ! output="$( git branch -r | awk '{print $1}' | grep -E -v -f /dev/fd/0 <(git branch -vv | grep origin || true) || true | awk '{print $1}' | xargs "${XARG_ARG}" git branch -D )"; then
+    printf '\e[31mFAILED:\e[0m\n'
+    echo "${output}"
+else
+    printf '\e[32mdone!\e[0m\n'
+fi
 
 # force a git prune to cleanup cruft (usually a `git gc` will do this, however there are corner cases)
 printf '\e[34mRunning  "git prune"... \e[0m'
@@ -102,7 +118,6 @@ if ! output=$(git prune 2>&1); then
 else
     printf '\e[32mdone!\e[0m\n'
 fi
-
 
 # always do a git gc in order to clean repos
 printf '\e[34mRunning  "git gc"...    \e[0m'
