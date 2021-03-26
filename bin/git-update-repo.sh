@@ -24,7 +24,6 @@
 
 set -o errexit
 set -o nounset
-set -o pipefail
 
 function usage() {
   local -r name="$(basename "${BASH_SOURCE[0]}")"
@@ -103,7 +102,7 @@ fi
 # deletes all local branches which are set up to track a remote branch,
 # where the remote branch has been deleted.
 printf '\e[34mRunning  git cleanup... \e[0m'
-if ! output="$( git branch -r | awk '{print $1}' | grep -E -v -f /dev/fd/0 <(git branch -vv | grep origin || true) || true | awk '{print $1}' | xargs "${XARG_ARG}" git branch -D )"; then
+if ! output="$( git branch -r | awk '{print $1}' | grep -E -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '{print $1}' | xargs ${XARG_ARG} git branch -D )"; then
     printf '\e[31mFAILED:\e[0m\n'
     echo "${output}"
 else
